@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,6 +15,9 @@ typedef struct Type Type;
 
 void error_at(char *loc, char *fmt, ...);
 long expect_number(void);
+char *singleCharToString(char c);
+char *strTypeOfVar(char *s, int l);
+int lenIsDigit(char *s);
 
 //
 // tokenize.c
@@ -23,10 +25,10 @@ long expect_number(void);
 
 // Token
 typedef enum {
-  TK_NUM,      // Integer literals
-  TK_EOF,      // End-of-file markers
-  TK_PLUS,     // Plus literals
-  TK_MINUS,    // Minux literals
+  TK_NUM,   // Integer literals
+  TK_EOF,   // End-of-file markers
+  TK_PLUS,  // Plus literals
+  TK_MINUS, // Minux literals
 } TokenKind;
 
 // Token type
@@ -51,25 +53,24 @@ extern Token *token;
 
 // AST node
 typedef enum {
-  ND_ADD,       // num + num
-  ND_SUB,       // num - num
-  ND_NUM,       // Integer
+  ND_ADD, // num + num
+  ND_SUB, // num - num
+  ND_NUM, // Integer
   ND_EOF,
 } NodeKind;
 
 // Token type
 typedef struct Node Node;
-struct Node{
+struct Node {
   NodeKind kind; // Token kind
-  Node* next;    // Next token
+  Node *next;    // Next token
   Token *tok;    // Representative token
 
-  Node *lhs;     // Left-hand side
-  Node *rhs;     // Right-hand side
+  Node *lhs; // Left-hand side
+  Node *rhs; // Right-hand side
 
-
-  long val;       // If kind is TK_NUM, its value
-  char *str;      // Token string
+  long val;  // If kind is TK_NUM, its value
+  char *str; // Token string
 };
 
 Node *node_gen();

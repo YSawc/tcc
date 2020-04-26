@@ -25,3 +25,30 @@ long expect_number(void) {
   token = token->next;
   return val;
 }
+
+char *singleCharToString(char c) {
+  char *s = malloc(2);
+  s[0] = c;
+  s[1] = '\0';
+  return s;
+}
+
+char *strTypeOfVar(char *s, int l) {
+  char *tmp = malloc(l);
+  for (int i = 0; i < l; i++) {
+    tmp[i] = s[i];
+  }
+  return tmp;
+}
+
+int lenIsDigit(char *s) {
+  int len = 0;
+  for (int i = 0; s[i] != '\0'; i++) {
+    if (isdigit(s[i])) {
+      len++;
+    } else {
+      break;
+    }
+  }
+  return len;
+}

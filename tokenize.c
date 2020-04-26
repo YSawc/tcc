@@ -5,8 +5,7 @@ Token *token;
 
 // Consumes the current token if it matches `op`.
 Token *consume(char *op) {
-  if (strlen(op) != token->len ||
-      strncmp(token->str, op, token->len))
+  if (strlen(op) != token->len || strncmp(token->str, op, token->len))
     return NULL;
   Token *t = token;
   token = token->next;
@@ -39,20 +38,21 @@ Token *tokenize(void) {
     // Add literal
     if (*p == '+') {
       p++;
-      cur = new_token(TK_PLUS, cur, p, 1);
+      cur = new_token(TK_PLUS, cur, "+", 1);
       continue;
     }
 
     // Sub literal
     if (*p == '-') {
       p++;
-      cur = new_token(TK_MINUS, cur, p, 1);
+      cur = new_token(TK_MINUS, cur, "-", 1);
       continue;
     }
 
     // Integer literal
     if (isdigit(*p)) {
-      cur = new_token(TK_NUM, cur, p, 0);
+      int l = lenIsDigit(p);
+      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), 0);
       char *q = p;
       cur->val = strtol(p, &p, 10);
       cur->len = p - q;

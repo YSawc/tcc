@@ -13,15 +13,18 @@ static void emit_global() {
   printf("  mov rbp, rsp\n");
 
   token = tokenize();
-  Node *node = node_gen();
+
+  Node head = {};
+  Node *node = &head;
+  node = node_gen();
+
   code_gen(node);
 }
 
-static void emit_data() {
-  emit_global();
-}
+static void emit_data() { emit_global(); }
 
 static void emit_end() {
+  printf("  pop rax\n");
   printf("  pop rbp\n");
   printf("  ret\n");
 }
