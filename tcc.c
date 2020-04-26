@@ -8,8 +8,41 @@ void emit_prologue() {
 void emit_global() {
   printf("main:\n");
   printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
 
-  printf("  mov rax, %d\n", atoi(user_input));
+  char *p = user_input;
+  printf("  mov rax, %ld\n", strtol(p, &p, 10));
+
+  while(*p) {
+
+    // whiteSpace literal
+    if (isspace(*p)) {
+      p++;
+      continue;
+    };
+
+    // add literal
+    if (*p == '+') {
+      p++;
+      printf("  add rax, %ld\n", strtol(p, &p, 10));
+    }
+
+    // sub literal
+    if (*p == '-') {
+      p++;
+      printf("  sub rax, %ld\n", strtol(p, &p, 10));
+    }
+
+    // Integer literal
+    if (isdigit(*p)) {
+      char *q = p;
+      printf("  mov rax, %ld\n", strtol(p, &p, 10));
+      p += p - q;
+      continue;
+    };
+
+    return;
+  }
 
   printf("  mov rbp, rsp\n");
 }
