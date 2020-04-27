@@ -24,7 +24,8 @@ static void emit_global() {
 static void emit_data() { emit_global(); }
 
 static void emit_end() {
-  printf("  pop rax\n");
+  printf(".L.return:\n");
+  printf("  mov rsp, rbp\n");
   printf("  pop rbp\n");
   printf("  ret\n");
 }

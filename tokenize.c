@@ -107,6 +107,13 @@ Token *tokenize(void) {
       continue;
     }
 
+    // return literal
+    if (startswith(p, "return")) {
+      cur = new_token(TK_RETURN, cur, strTypeOfVar(p, 6), 6);
+      p+=6;
+      continue;
+    }
+
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);

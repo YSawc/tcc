@@ -13,6 +13,12 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
+static Node *new_uarray(NodeKind kind, Node *rhs) {
+  Node *node = new_node(kind);
+  node->rhs = rhs;
+  return node;
+}
+
 static Node *new_num(long val) {
   Node *node = new_node(ND_NUM);
   node->val = val;
@@ -32,8 +38,14 @@ Node *node_gen() {
   return node;
 }
 
-/* relational stmt */
+/* stmt ("return")* relational ";" */
 static Node *stmt() {
+  if (consume("return")) {
+    Node *node = new_uarray(ND_RETURN, equality());
+    expect(';');
+    return node;
+  }
+
   Node *node = equality();
   expect(';');
   return node;
@@ -130,9 +142,16 @@ static Node *primary_expr(void) {
 }
 
 void code_gen(Node *node) {
-  if (node->kind == ND_NUM) {
+  switch (node->kind) {
+  case ND_NUM:
     printf("  push %ld\n", node->val);
     return;
+  case ND_RETURN:
+    code_gen(node->rhs);
+    printf("  pop rax\n");
+    printf("  jmp .L.return\n");
+    return;
+  default:;
   }
 
   code_gen(node->lhs);

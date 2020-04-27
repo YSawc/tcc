@@ -27,16 +27,17 @@ int lenIsDigit(char *s);
 
 // Token
 typedef enum {
-  TK_NUM,        // Integer literals
-  TK_PLUS,       // Plus literals
-  TK_MINUS,      // Minux literals
-  TK_ASTERISC,   // Aiterisc literals
-  TK_SLASH,      // Slach literals
-  TK_LPAREN,     // LParen literals
-  TK_RPAREN,     // RParen literals
-  TK_COMPARISON, // Comparison literals
-  TK_STMT,       // Statement literals
-  TK_EOF,        // End-of-file markers
+  TK_NUM,        // Integer literal
+  TK_PLUS,       // Plus literal
+  TK_MINUS,      // Minux literal
+  TK_ASTERISC,   // Aiterisc literal
+  TK_SLASH,      // Slach literal
+  TK_LPAREN,     // LParen literal
+  TK_RPAREN,     // RParen literal
+  TK_COMPARISON, // Comparison literal
+  TK_STMT,       // Statement literal
+  TK_RETURN,     // Return literal
+  TK_EOF,        // End-of-file literal
 } TokenKind;
 
 // Token type
@@ -73,6 +74,7 @@ typedef enum {
   ND_LT,     // <
   ND_LTE,    // <=
   ND_STMT,   // ;
+  ND_RETURN,    // EOF
   ND_EOF,    // EOF
 } NodeKind;
 
