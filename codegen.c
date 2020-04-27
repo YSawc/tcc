@@ -19,12 +19,25 @@ static Node *new_num(long val) {
   return node;
 }
 
+static Node *stmt(void);
 static Node *equality(void);
 static Node *relational(void);
 static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
+
+Node *node_gen() {
+  Node *node = stmt();
+  return node;
+}
+
+/* relational stmt */
+static Node *stmt() {
+  Node *node = equality();
+  expect(';');
+  return node;
+}
 
 /* equality = relational ("==" relational | "!=" relational )* */
 static Node *equality(void) {
@@ -114,11 +127,6 @@ static Node *primary_expr(void) {
     return new_node(ND_RPAREN);
   }
   return NULL;
-}
-
-Node *node_gen() {
-  Node *node = equality();
-  return node;
 }
 
 void code_gen(Node *node) {

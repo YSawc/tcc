@@ -35,6 +35,7 @@ typedef enum {
   TK_LPAREN,     // LParen literals
   TK_RPAREN,     // RParen literals
   TK_COMPARISON, // Comparison literals
+  TK_STMT,       // Statement literals
   TK_EOF,        // End-of-file markers
 } TokenKind;
 
@@ -67,11 +68,12 @@ typedef enum {
   ND_DIV,    //  /
   ND_LPAREN, // (
   ND_RPAREN, // )
-  ND_EOF,    // EOF
   ND_EQ,     // ==
   ND_NEQ,    // !=
   ND_LT,     // <
   ND_LTE,    // <=
+  ND_STMT,   // ;
+  ND_EOF,    // EOF
 } NodeKind;
 
 // Token type

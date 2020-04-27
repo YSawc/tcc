@@ -84,6 +84,13 @@ Token *tokenize(void) {
       continue;
     }
 
+    // RParen literal
+    if (*p == ';') {
+      cur = new_token(TK_STMT, cur, ";", 1);
+      p++;
+      continue;
+    }
+
     // Comparison literal
     if ((startswith(p, "==")) || (startswith(p, "!=")) ||
         (startswith(p, "<=")) || (startswith(p, "=>")) ||

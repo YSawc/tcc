@@ -16,32 +16,32 @@ assert() {
   fi
 }
 
-assert 0 0
-assert 42 42
+assert 0 '0;'
+assert 42 '42;'
 
-assert 7 '5+2'
-assert 3 '5-2'
+assert 7 '5+2;'
+assert 3 '5-2;'
 
-assert 10 '5* 2'
-assert 3 '6 /2'
+assert 10 '5* 2;'
+assert 3 '6 /2;'
 
-assert 5 '+5'
-assert 10 ' --10'
+assert 5 '+5;'
+assert 10 ' --10;'
 
-assert 2 '10 /(2 + 3 )'
-assert 11 '2 + ( 3 * 3 )'
+assert 2 '10 /(2 + 3 );'
+assert 11 '2 + ( 3 * 3 );';
 
-assert 1 '0 == 0'
-assert 0 '0 == 1'
-assert 0 '0 != 0'
-assert 1 '0 != 1'
-assert 1 '0 < 1'
-assert 0 '0 < 0'
-assert 1 '0 <= 0'
-assert 0 '1 <= 0'
-assert 0 '0 > 0'
-assert 1 '1 > 0'
-assert 1 '0 >= 0'
-assert 0 '0 >= 1'
+assert 1 '0 == 0;'
+assert 0 '0 == 1;'
+assert 0 '0 != 0;'
+assert 1 '0 != 1;'
+assert 1 '0 < 1;'
+assert 0 '0 < 0;'
+assert 1 '0 <= 0;'
+assert 0 '1 <= 0;'
+assert 0 '0 > 0;'
+assert 1 '1 > 0;'
+assert 1 '0 >= 0;'
+assert 0 '0 >= 1;'
 
 echo OK
