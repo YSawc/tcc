@@ -37,50 +37,73 @@ Token *tokenize(void) {
 
     // Add literal
     if (*p == '+') {
-      p++;
       cur = new_token(TK_PLUS, cur, "+", 1);
+      p++;
       continue;
     }
 
     // Sub literal
     if (*p == '-') {
-      p++;
       cur = new_token(TK_MINUS, cur, "-", 1);
+      p++;
       continue;
     }
 
     // Asterisk literal
     if (*p == '*') {
-      p++;
       cur = new_token(TK_ASTERISC, cur, "*", 1);
+      p++;
       continue;
     }
 
     // Slash literal
     if (*p == '/') {
-      p++;
       cur = new_token(TK_SLASH, cur, "/", 1);
+      p++;
       continue;
     }
 
     // LParen literal
     if (*p == '(') {
-      p++;
       cur = new_token(TK_LPAREN, cur, "(", 1);
+      p++;
       continue;
     }
 
     // RParen literal
     if (*p == ')') {
-      p++;
       cur = new_token(TK_RPAREN, cur, ")", 1);
+      p++;
+      continue;
+    }
+
+    // RParen literal
+    if (*p == ')') {
+      cur = new_token(TK_RPAREN, cur, ")", 1);
+      p++;
+      continue;
+    }
+
+    // Comparison literal
+    if ((startswith(p, "==")) || (startswith(p, "!=")) ||
+        (startswith(p, "<=")) || (startswith(p, "=>")) ||
+        (startswith(p, ">=")) || (startswith(p, "=<"))) {
+      cur = new_token(TK_COMPARISON, cur, strTypeOfVar(p, 2), 2);
+      p += 2;
+      continue;
+    }
+
+    // Comparison literal
+    if ((*p == '<') || (*p == '>')) {
+      cur = new_token(TK_COMPARISON, cur, strTypeOfVar(p, 1), 1);
+      p++;
       continue;
     }
 
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);
-      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), 0);
+      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), 1);
       char *q = p;
       cur->val = strtol(p, &p, 10);
       cur->len = p - q;

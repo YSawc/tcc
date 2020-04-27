@@ -18,6 +18,10 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
+bool startswith(char *p, char *q) {
+  return strncmp(p, q, strlen(q)) == 0;
+}
+
 void expect(char op) {
   if (token->str[0] != op)
     error_at(token->str, "%c not detected", op);

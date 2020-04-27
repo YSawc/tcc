@@ -14,6 +14,7 @@ typedef struct Type Type;
 //
 
 void error_at(char *loc, char *fmt, ...);
+bool startswith(char *p, char *q);
 void expect(char op);
 long expect_number(void);
 char *singleCharToString(char c);
@@ -26,14 +27,15 @@ int lenIsDigit(char *s);
 
 // Token
 typedef enum {
-  TK_NUM,      // Integer literals
-  TK_PLUS,     // Plus literals
-  TK_MINUS,    // Minux literals
-  TK_ASTERISC, // Aiterisc literals
-  TK_SLASH,    // Slach literals
-  TK_LPAREN,   // LParen literals
-  TK_RPAREN,   // RParen literals
-  TK_EOF,      // End-of-file markers
+  TK_NUM,        // Integer literals
+  TK_PLUS,       // Plus literals
+  TK_MINUS,      // Minux literals
+  TK_ASTERISC,   // Aiterisc literals
+  TK_SLASH,      // Slach literals
+  TK_LPAREN,     // LParen literals
+  TK_RPAREN,     // RParen literals
+  TK_COMPARISON, // Comparison literals
+  TK_EOF,        // End-of-file markers
 } TokenKind;
 
 // Token type
@@ -66,6 +68,10 @@ typedef enum {
   ND_LPAREN, // (
   ND_RPAREN, // )
   ND_EOF,    // EOF
+  ND_EQ,     // ==
+  ND_NEQ,    // !=
+  ND_LT,     // <
+  ND_LTE,    // <=
 } NodeKind;
 
 // Token type

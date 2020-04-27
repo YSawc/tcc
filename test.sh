@@ -31,4 +31,17 @@ assert 10 ' --10'
 assert 2 '10 /(2 + 3 )'
 assert 11 '2 + ( 3 * 3 )'
 
+assert 1 '0 == 0'
+assert 0 '0 == 1'
+assert 0 '0 != 0'
+assert 1 '0 != 1'
+assert 1 '0 < 1'
+assert 0 '0 < 0'
+assert 1 '0 <= 0'
+assert 0 '1 <= 0'
+assert 0 '0 > 0'
+assert 1 '1 > 0'
+assert 1 '0 >= 0'
+assert 0 '0 >= 1'
+
 echo OK
