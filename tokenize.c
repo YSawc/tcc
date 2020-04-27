@@ -63,6 +63,20 @@ Token *tokenize(void) {
       continue;
     }
 
+    // LParen literal
+    if (*p == '(') {
+      p++;
+      cur = new_token(TK_LPAREN, cur, "(", 1);
+      continue;
+    }
+
+    // RParen literal
+    if (*p == ')') {
+      p++;
+      cur = new_token(TK_RPAREN, cur, ")", 1);
+      continue;
+    }
+
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);

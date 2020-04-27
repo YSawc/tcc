@@ -18,6 +18,12 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
+void expect(char op) {
+  if (token->str[0] != op)
+    error_at(token->str, "%c not detected", op);
+  token = token->next;
+}
+
 long expect_number(void) {
   if (token->kind != TK_NUM)
     error_at(token->str, "expected number, but not detected");
@@ -29,8 +35,7 @@ long expect_number(void) {
 char *singleCharToString(char c) {
   char *s = malloc(2);
   s[0] = c;
-  s[1] = '\0';
-  return s;
+  s[1] = '\0';  return s;
 }
 
 char *strTypeOfVar(char *s, int l) {

@@ -24,6 +24,7 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
 
+/* add = mul ( "*" mul | "/" mul )* */
 static Node *add() {
   Node *node = mul();
 
@@ -38,7 +39,7 @@ static Node *add() {
   }
 }
 
-/* expr = unary ( "*" mul | "/" mul )* */
+/* mul = unary ( "*" unary | "/" unary )* */
 static Node *mul() {
   Node *node = unary();
 
@@ -53,7 +54,7 @@ static Node *mul() {
   }
 }
 
-/* unary = ( "+" unary | "-" unary)? primary_expr */
+/* unary = ( "+" | "-" )? primary_expr */
 static Node *unary() {
   for (;;) {
     if (consume("+")) {
@@ -66,10 +67,16 @@ static Node *unary() {
   }
 }
 
-/* primary_expr = (NUM) */
+/* primary_expr = ( NUM | "(" add ")" ) */
 static Node *primary_expr(void) {
   if (token->kind == TK_NUM) {
     return new_num(expect_number());
+  } else if (consume("(")) {
+    node = add();
+    expect(')');
+    return node;
+  } else if (token->kind == TK_RPAREN) {
+    return new_node(ND_RPAREN);
   }
   return NULL;
 }

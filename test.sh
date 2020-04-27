@@ -28,4 +28,7 @@ assert 3 '6 /2'
 assert 5 '+5'
 assert 10 ' --10'
 
+assert 2 '10 /(2 + 3 )'
+assert 11 '2 + ( 3 * 3 )'
+
 echo OK
