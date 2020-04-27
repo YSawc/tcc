@@ -22,4 +22,10 @@ assert 42 42
 assert 7 '5+2'
 assert 3 '5-2'
 
+assert 10 '5* 2'
+assert 3 '6 /2'
+
+assert 5 '+5'
+assert 10 ' --10'
+
 echo OK

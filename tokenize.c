@@ -49,6 +49,20 @@ Token *tokenize(void) {
       continue;
     }
 
+    // Asterisk literal
+    if (*p == '*') {
+      p++;
+      cur = new_token(TK_ASTERISC, cur, "*", 1);
+      continue;
+    }
+
+    // Slash literal
+    if (*p == '/') {
+      p++;
+      cur = new_token(TK_SLASH, cur, "/", 1);
+      continue;
+    }
+
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);

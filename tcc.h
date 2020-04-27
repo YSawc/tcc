@@ -25,10 +25,12 @@ int lenIsDigit(char *s);
 
 // Token
 typedef enum {
-  TK_NUM,   // Integer literals
-  TK_EOF,   // End-of-file markers
-  TK_PLUS,  // Plus literals
-  TK_MINUS, // Minux literals
+  TK_NUM,      // Integer literals
+  TK_PLUS,     // Plus literals
+  TK_MINUS,    // Minux literals
+  TK_ASTERISC, // Aiterisc literals
+  TK_SLASH,    // Slack literals
+  TK_EOF,      // End-of-file markers
 } TokenKind;
 
 // Token type
@@ -53,9 +55,11 @@ extern Token *token;
 
 // AST node
 typedef enum {
-  ND_ADD, // num + num
-  ND_SUB, // num - num
-  ND_NUM, // Integer
+  ND_NUM,      // Integer
+  ND_ADD,      // num + num
+  ND_SUB,      // num - num
+  ND_MUL, // num * num
+  ND_DIV,    // num / num
   ND_EOF,
 } NodeKind;
 
