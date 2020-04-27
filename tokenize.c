@@ -3,6 +3,10 @@
 char *user_input;
 Token *token;
 
+bool at_eof() {
+  return token->kind == TK_EOF;
+}
+
 // Consumes the current token if it matches `op`.
 Token *consume(char *op) {
   if (strlen(op) != token->len || strncmp(token->str, op, token->len))

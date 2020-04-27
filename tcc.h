@@ -50,6 +50,7 @@ struct Token {
   int len;        // Token length
 };
 
+bool at_eof(void);
 Token *consume(char *op);
 Token *tokenize(void);
 
@@ -74,7 +75,7 @@ typedef enum {
   ND_LT,     // <
   ND_LTE,    // <=
   ND_STMT,   // ;
-  ND_RETURN,    // EOF
+  ND_RETURN, // Return
   ND_EOF,    // EOF
 } NodeKind;
 

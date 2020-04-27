@@ -15,10 +15,16 @@ static void emit_global() {
   token = tokenize();
 
   Node head = {};
-  Node *node = &head;
-  node = node_gen();
+  Node *cur = &head;
 
-  code_gen(node);
+  while (!at_eof()) {
+    cur->next = node_gen();
+    cur = cur->next;
+  }
+
+  for (Node *node = cur; node; node = node->next) {
+    code_gen(node);
+  }
 }
 
 static void emit_data() { emit_global(); }
