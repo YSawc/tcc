@@ -11,6 +11,7 @@ static void emit_global() {
   printf("main:\n");
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
+  printf("  sub rsp, 208\n");
 
   token = tokenize();
 
@@ -21,6 +22,8 @@ static void emit_global() {
     cur->next = node_gen();
     cur = cur->next;
   }
+
+  cur = head.next;
 
   for (Node *node = cur; node; node = node->next) {
     code_gen(node);

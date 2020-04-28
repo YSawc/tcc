@@ -1,5 +1,30 @@
 #include "tcc.h"
 
+// Pushes the given node's address to the stack.
+static void gen_addr(Node *node) {
+  if (node->kind == ND_VAR) {
+    int offset = (node->str[0] - 'a' + 1) * 8;
+    printf("  lea rax, [rbp-%d]\n", offset);
+    printf("  push rax\n");
+    return;
+  }
+
+  error_at(token->str, "not an lvalue");
+}
+
+static void load(void) {
+  printf("  pop rax\n");
+  printf("  mov rax, [rax]\n");
+  printf("  push rax\n");
+}
+
+static void store(void) {
+  printf("  pop rdi\n");
+  printf("  pop rax\n");
+  printf("  mov [rax], rdi\n");
+  printf("  push rdi\n");
+}
+
 static Node *new_node(NodeKind kind) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
@@ -25,7 +50,14 @@ static Node *new_num(long val) {
   return node;
 }
 
+static Node *new_var_node(char *str) {
+  Node *node = new_node(ND_VAR);
+  node->str = str;
+  return node;
+}
+
 static Node *stmt(void);
+static Node *assign(void);
 static Node *equality(void);
 static Node *relational(void);
 static Node *add(void);
@@ -46,8 +78,16 @@ static Node *stmt() {
     return node;
   }
 
-  Node *node = equality();
+  Node *node = assign();
   expect(';');
+  return node;
+}
+
+// assign = equality ("=" assign)?
+static Node *assign(void) {
+  Node *node = equality();
+  if (consume("="))
+    node = new_binary(ND_ASSIGN, node, assign());
   return node;
 }
 
@@ -127,24 +167,34 @@ static Node *unary() {
   }
 }
 
-/* primary_expr = ( NUM | "(" add ")" ) */
+/* primary_expr = ( NUM | Ident | "(" add ")" ) */
 static Node *primary_expr(void) {
-  if (token->kind == TK_NUM) {
-    return new_num(expect_number());
-  } else if (consume("(")) {
+  if (consume("(")) {
     node = add();
     expect(')');
     return node;
-  } else if (token->kind == TK_RPAREN) {
-    return new_node(ND_RPAREN);
   }
-  return NULL;
+
+  Token *tok = consume_ident();
+  if (tok)
+    return new_var_node(tok->str);
+
+  return new_num(expect_number());
 }
 
 void code_gen(Node *node) {
   switch (node->kind) {
   case ND_NUM:
     printf("  push %ld\n", node->val);
+    return;
+  case ND_VAR:
+    gen_addr(node);
+    load();
+    return;
+  case ND_ASSIGN:
+    gen_addr(node->lhs);
+    code_gen(node->rhs);
+    store();
     return;
   case ND_RETURN:
     code_gen(node->rhs);

@@ -38,6 +38,8 @@ typedef enum {
   TK_STMT,       // Statement literal
   TK_RETURN,     // Return literal
   TK_EOF,        // End-of-file literal
+  TK_ASSIGN,     // Assign literal
+  TK_IDENT,      // Ident literal
 } TokenKind;
 
 // Token type
@@ -52,6 +54,7 @@ struct Token {
 
 bool at_eof(void);
 Token *consume(char *op);
+Token *consume_ident(void);
 Token *tokenize(void);
 
 extern char *user_input;
@@ -77,6 +80,8 @@ typedef enum {
   ND_STMT,   // ;
   ND_RETURN, // Return
   ND_EOF,    // EOF
+  ND_ASSIGN, // =
+  ND_VAR, // Variable
 } NodeKind;
 
 // Token type

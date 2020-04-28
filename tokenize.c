@@ -16,6 +16,15 @@ Token *consume(char *op) {
   return t;
 }
 
+// Consumes the current token if it is an identifier.
+Token *consume_ident(void) {
+  if (token->kind != TK_IDENT)
+    return NULL;
+  Token *t = token;
+  token = token->next;
+  return t;
+}
+
 // create new token
 static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   Token *tok = calloc(1, sizeof(Token)); // flag with prologue.
@@ -104,6 +113,13 @@ Token *tokenize(void) {
       continue;
     }
 
+    // RParen literal
+    if (*p == '=') {
+      cur = new_token(TK_ASSIGN, cur, strTypeOfVar(p, 1), 1);
+      p++;
+      continue;
+    }
+
     // Comparison literal
     if ((*p == '<') || (*p == '>')) {
       cur = new_token(TK_COMPARISON, cur, strTypeOfVar(p, 1), 1);
@@ -127,6 +143,13 @@ Token *tokenize(void) {
       cur->len = p - q;
       continue;
     };
+
+    // Identifier
+    if ('a' <= *p && *p <= 'z') {
+      cur = new_token(TK_IDENT, cur, strTypeOfVar(p, 1), 1);
+      p++;
+      continue;
+    }
   }
   cur = new_token(TK_EOF, cur, p, 1);
   return head.next;
