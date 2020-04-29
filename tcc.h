@@ -28,20 +28,11 @@ int lenIsDigit(char *s);
 
 // Token
 typedef enum {
-  TK_RESERVED,   // Reserved literal
-  TK_NUM,        // Integer literal
-  TK_PLUS,       // Plus literal
-  TK_MINUS,      // Minux literal
-  TK_ASTERISC,   // Aiterisc literal
-  TK_SLASH,      // Slach literal
-  TK_LPAREN,     // LParen literal
-  TK_RPAREN,     // RParen literal
-  TK_COMPARISON, // Comparison literal
-  TK_STMT,       // Statement literal
-  TK_RETURN,     // Return literal
-  TK_EOF,        // End-of-file literal
-  TK_ASSIGN,     // Assign literal
-  TK_IDENT,      // Ident literal
+  TK_RESERVED, // Reserved literal
+  TK_NUM,      // Integer literal
+  TK_RETURN,   // Return literal
+  TK_EOF,      // End-of-file literal
+  TK_IDENT,    // Ident literal
 } TokenKind;
 
 // Token type
@@ -91,6 +82,8 @@ typedef enum {
   ND_LTE,    // <=
   ND_STMT,   // ;
   ND_RETURN, // Return
+  ND_IF,     // If
+  ND_ELS,    // If
   ND_EOF,    // EOF
   ND_VAR,    // Variable
   ND_ASSIGN, // =
@@ -103,8 +96,13 @@ struct Node {
   Node *next;    // Next token
   Token *tok;    // Representative token
 
-  Node *lhs; // Left-hand side
-  Node *rhs; // Right-hand side
+  Node *lhs;  // Left-hand side
+  Node *rhs;  // Right-hand side
+  Node *cond; // condition
+  Node *stmt; // statement
+
+  // IF statement
+  Node *els; // else side
 
   Var *var; // Variable
 

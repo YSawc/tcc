@@ -39,10 +39,7 @@ Token *tokenize(void) {
   Token *cur = &head;
 
   // list of reserved multiple letter.
-  static char *rmw[] = {
-      "==", "!=", "<=", "=>", ">=", "=<",
-
-  };
+  static char *rmw[] = {"==", "!=", "<=", "=>", ">=", "=<", "if", "else"};
 
   // list of reserved single letter.
   static char rsw[] = {

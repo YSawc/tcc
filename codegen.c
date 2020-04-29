@@ -54,6 +54,14 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
+static Node *new_stmt_node(NodeKind kind, Node *cond, Node *stmt) {
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = kind;
+  node->cond = cond;
+  node->stmt = stmt;
+  return node;
+}
+
 static Node *new_uarray(NodeKind kind, Node *rhs) {
   Node *node = new_node(kind);
   node->rhs = rhs;
@@ -122,11 +130,22 @@ void emit_rsp(Function *function) {
   };
 }
 
-/* stmt ("return")* relational ";" */
+/* stmt = ("return")* relational ";"
+ *      | ("if")* equality ";" */
 static Node *stmt() {
   if (consume("return")) {
     Node *node = new_uarray(ND_RETURN, assign());
     expect(';');
+    return node;
+  } else if (consume("if")) {
+    Node *node = new_node(ND_IF);
+    expect('(');
+    node->cond = primary_expr();
+    expect(')');
+    node->stmt = stmt();
+    if (consume("else")) {
+      node->els = new_uarray(ND_ELS, equality());
+    }
     return node;
   }
 
@@ -242,6 +261,8 @@ static Node *primary_expr(void) {
   return new_num(expect_number());
 }
 
+static int conditional_c = 0;
+
 void code_gen(Node *node) {
   switch (node->kind) {
   case ND_NUM:
@@ -255,6 +276,18 @@ void code_gen(Node *node) {
     gen_var_addr(node->lhs);
     code_gen(node->rhs);
     store_val();
+    return;
+  case ND_IF:
+    /* if (node->cond) { */
+    /* } else { */
+    /* } */
+    conditional_c++;
+    code_gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je .L.end.%d\n", conditional_c);
+    code_gen(node->stmt);
+    printf(".L.end.%d:\n", conditional_c);
     return;
   case ND_RETURN:
     code_gen(node->rhs);
