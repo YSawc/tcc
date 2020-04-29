@@ -19,6 +19,7 @@ void expect(char op);
 long expect_number(void);
 char *singleCharToString(char c);
 char *strTypeOfVar(char *s, int l);
+char *strtoalpha(char *s);
 int lenIsDigit(char *s);
 
 //
@@ -56,6 +57,7 @@ bool at_eof(void);
 Token *consume(char *op);
 Token *consume_ident(void);
 Token *tokenize(void);
+void assign_var_offset();
 
 extern char *user_input;
 extern Token *token;
@@ -63,6 +65,19 @@ extern Token *token;
 //
 // codegen.c
 //
+
+// Local variable
+typedef struct Var Var;
+struct Var {
+  Var *next;
+  char *name; // Variable name
+  int offset; // Offset from RBP
+};
+
+Var *new_lvar(char *name);
+Var *find_var(char *str);
+
+void emit_rsp(void);
 
 // AST node
 typedef enum {
@@ -80,8 +95,8 @@ typedef enum {
   ND_STMT,   // ;
   ND_RETURN, // Return
   ND_EOF,    // EOF
+  ND_VAR,    // Variable
   ND_ASSIGN, // =
-  ND_VAR, // Variable
 } NodeKind;
 
 // Token type
@@ -94,11 +109,13 @@ struct Node {
   Node *lhs; // Left-hand side
   Node *rhs; // Right-hand side
 
+  Var *var; // Variable
+
   long val;  // If kind is TK_NUM, its value
   char *str; // Token string
 };
 
-Node *node_gen();
+Node *gen();
 void code_gen(Node *node);
 
 extern Node *node;

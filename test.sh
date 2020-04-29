@@ -52,4 +52,7 @@ assert 2 '1; return 2; 3;'
 assert 3 'a=3; return a;'
 assert 8 'a=3; z=5; return a+z;'
 
+assert 3 'ii = 3; return ii;'
+assert 12 'ii = 3; jj = 4; return ii * jj;'
+
 echo OK

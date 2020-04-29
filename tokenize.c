@@ -3,9 +3,7 @@
 char *user_input;
 Token *token;
 
-bool at_eof() {
-  return token->kind == TK_EOF;
-}
+bool at_eof() { return token->kind == TK_EOF; }
 
 // Consumes the current token if it matches `op`.
 Token *consume(char *op) {
@@ -113,9 +111,9 @@ Token *tokenize(void) {
       continue;
     }
 
-    // RParen literal
+    // Assign literal
     if (*p == '=') {
-      cur = new_token(TK_ASSIGN, cur, strTypeOfVar(p, 1), 1);
+      cur = new_token(TK_ASSIGN, cur, "=", 1);
       p++;
       continue;
     }
@@ -130,7 +128,20 @@ Token *tokenize(void) {
     // return literal
     if (startswith(p, "return")) {
       cur = new_token(TK_RETURN, cur, strTypeOfVar(p, 6), 6);
-      p+=6;
+      p += 6;
+      continue;
+    }
+
+    // alpha literal
+    if (isalpha(*p)) {
+      char *tmp = strtoalpha(p);
+      /* Var *var = find_var(tmp); */
+      /* if (!var) { */
+      /*   var = new_lvar(tmp); */
+      /*   var = var->next; */
+      /* } */
+      p += strlen(tmp);
+      cur = new_token(TK_IDENT, cur, tmp, strlen(tmp));
       continue;
     }
 
@@ -145,11 +156,11 @@ Token *tokenize(void) {
     };
 
     // Identifier
-    if ('a' <= *p && *p <= 'z') {
-      cur = new_token(TK_IDENT, cur, strTypeOfVar(p, 1), 1);
-      p++;
-      continue;
-    }
+    /* if ('a' <= *p && *p <= 'z') { */
+    /*   cur = new_token(TK_IDENT, cur, strTypeOfVar(p, 1), 1); */
+    /*   p++; */
+    /*   continue; */
+    /* } */
   }
   cur = new_token(TK_EOF, cur, p, 1);
   return head.next;

@@ -1,7 +1,9 @@
 #include "tcc.h"
 
+Var *lVars;
+
 // Pushes the given node's address to the stack.
-static void gen_addr(Node *node) {
+static void gen_var_addr(Node *node) {
   if (node->kind == ND_VAR) {
     int offset = (node->str[0] - 'a' + 1) * 8;
     printf("  lea rax, [rbp-%d]\n", offset);
@@ -12,17 +14,54 @@ static void gen_addr(Node *node) {
   error_at(token->str, "not an lvalue");
 }
 
-static void load(void) {
+static void load_val(void) {
   printf("  pop rax\n");
   printf("  mov rax, [rax]\n");
   printf("  push rax\n");
 }
 
-static void store(void) {
+static void store_val(void) {
   printf("  pop rdi\n");
   printf("  pop rax\n");
   printf("  mov [rax], rdi\n");
   printf("  push rdi\n");
+}
+
+Var *new_lvar(char *name) {
+  Var *var = calloc(1, sizeof(Var));
+  var->next = lVars;
+  var->name = name;
+  lVars = var;
+  return var;
+}
+
+Var *find_var(char *str) {
+  for (Var *v = lVars; v; v = v->next) {
+    if (strlen(v->name) == strlen(str) && !strncmp(v->name, str, strlen(str)))
+      return v;
+    return NULL;
+  }
+  return NULL;
+}
+
+void assign_var_offset() {
+  int i = 0;
+  for (Var *v = lVars; v; v = v->next) {
+    i++;
+    v->offset = i * 8;
+  }
+}
+
+void emit_rsp() {
+  // shift rsp counter counts of local variable.
+  if (lVars) {
+    int i = 0;
+    for (Var *v = lVars; v; v = v->next)
+      i++;
+    printf("  sub rsp, %d\n", i * 8);
+  } else {
+    printf("  sub rsp, 0\n");
+  };
 }
 
 static Node *new_node(NodeKind kind) {
@@ -50,22 +89,24 @@ static Node *new_num(long val) {
   return node;
 }
 
-static Node *new_var_node(char *str) {
+static Node *new_var_node(Var *var) {
   Node *node = new_node(ND_VAR);
-  node->str = str;
+  node->var = var;
+  node->str = var->name;
   return node;
 }
 
 static Node *stmt(void);
 static Node *assign(void);
 static Node *equality(void);
+static Node *assign(void);
 static Node *relational(void);
 static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
 
-Node *node_gen() {
+Node *gen() {
   Node *node = stmt();
   return node;
 }
@@ -73,7 +114,7 @@ Node *node_gen() {
 /* stmt ("return")* relational ";" */
 static Node *stmt() {
   if (consume("return")) {
-    Node *node = new_uarray(ND_RETURN, equality());
+    Node *node = new_uarray(ND_RETURN, assign());
     expect(';');
     return node;
   }
@@ -84,10 +125,13 @@ static Node *stmt() {
 }
 
 // assign = equality ("=" assign)?
-static Node *assign(void) {
+static Node *assign() {
   Node *node = equality();
-  if (consume("="))
-    node = new_binary(ND_ASSIGN, node, assign());
+
+  if (consume("=")) {
+    Node *n = new_binary(ND_ASSIGN, node, new_num(expect_number()));
+    return n;
+  }
   return node;
 }
 
@@ -176,9 +220,18 @@ static Node *primary_expr(void) {
   }
 
   Token *tok = consume_ident();
-  if (tok)
-    return new_var_node(tok->str);
-
+  if (tok) {
+    // find variable. If detected, return var_node.
+    Var *var = find_var(tok->str);
+    if (!var) {
+      lVars = new_lvar(tok->str);
+      /* lVars = lVars->next; */
+      Var *var = find_var(tok->str);
+      return new_var_node(var);
+    } else {
+      return new_var_node(var);
+    }
+  }
   return new_num(expect_number());
 }
 
@@ -188,13 +241,13 @@ void code_gen(Node *node) {
     printf("  push %ld\n", node->val);
     return;
   case ND_VAR:
-    gen_addr(node);
-    load();
+    gen_var_addr(node);
+    load_val();
     return;
   case ND_ASSIGN:
-    gen_addr(node->lhs);
+    gen_var_addr(node->lhs);
     code_gen(node->rhs);
-    store();
+    store_val();
     return;
   case ND_RETURN:
     code_gen(node->rhs);

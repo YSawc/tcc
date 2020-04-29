@@ -19,9 +19,13 @@ static void emit_global() {
   Node *cur = &head;
 
   while (!at_eof()) {
-    cur->next = node_gen();
+    cur->next = gen();
     cur = cur->next;
   }
+
+  // Variable created this phase, so assign each variable with offset.
+  assign_var_offset();
+  emit_rsp();
 
   cur = head.next;
 

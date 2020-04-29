@@ -50,6 +50,18 @@ char *strTypeOfVar(char *s, int l) {
   return tmp;
 }
 
+char *strtoalpha(char *s) {
+  char *strArr = malloc(24);
+  for (int i = 0; s[i] != '\0'; i++) {
+    if (isalpha(s[i])) {
+      strArr[i] = s[i];
+    } else {
+      break;
+    }
+  }
+  return strArr;
+}
+
 int lenIsDigit(char *s) {
   int len = 0;
   for (int i = 0; s[i] != '\0'; i++) {
