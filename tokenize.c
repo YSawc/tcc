@@ -38,13 +38,16 @@ Token *tokenize(void) {
   Token head = {};
   Token *cur = &head;
 
-  // list of reserved multiple letter.
-  static char *rmw[] = {"==", "!=", "<=", "=>", ">=", "=<", "if", "else"};
+  // list of reserved multiple .symbol
+  static char *mSym[] = {"==", "!=", "<=", "=>", ">=", "=<"};
 
-  // list of reserved single letter.
-  static char rsw[] = {
+  // list of reserved single letter.symbol
+  static char sSym[] = {
       '+', '-', '*', '/', '(', ')', ';', '=', '<', '>',
   };
+
+  // list of reserved multiple letter.string
+  static char *mSt[] = {"if", "else"};
 
   while (*p) {
 
@@ -55,9 +58,9 @@ Token *tokenize(void) {
     };
 
     // Detector in list of reserved multiple letter
-    for (int i = 0; i < sizeof(rmw) / sizeof(*rmw); i++) {
-      int tmp_len = strlen(rmw[i]);
-      if (startswith(p, rmw[i])) {
+    for (int i = 0; i < sizeof(mSym) / sizeof(*mSym); i++) {
+      int tmp_len = strlen(mSym[i]);
+      if (startswith(p, mSym[i])) {
         cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
         p += tmp_len;
         continue;
@@ -65,10 +68,20 @@ Token *tokenize(void) {
     }
 
     // Detector in list of reserved single letter
-    for (int i = 0; i < sizeof(rsw) / sizeof(*rsw); i++) {
-      if (*p == rsw[i]) {
+    for (int i = 0; i < sizeof(sSym) / sizeof(*sSym); i++) {
+      if (*p == sSym[i]) {
         cur = new_token(TK_RESERVED, cur, p, 1);
         p++;
+        continue;
+      }
+    }
+
+    // Detector in list of reserved multiple letter string
+    for (int i = 0; i < sizeof(mSt) / sizeof(*mSt); i++) {
+      int tmp_len = strlen(mSt[i]);
+      if (startswith(p, mSt[i])) {
+        cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
+        p+= tmp_len;
         continue;
       }
     }

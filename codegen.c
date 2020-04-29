@@ -137,14 +137,16 @@ static Node *stmt() {
     Node *node = new_uarray(ND_RETURN, assign());
     expect(';');
     return node;
-  } else if (consume("if")) {
+  }
+
+  if (consume("if")) {
     Node *node = new_node(ND_IF);
     expect('(');
     node->cond = primary_expr();
     expect(')');
-    node->stmt = stmt();
+    node->then = stmt();
     if (consume("else")) {
-      node->els = new_uarray(ND_ELS, equality());
+      node->els = stmt();
     }
     return node;
   }
@@ -278,16 +280,25 @@ void code_gen(Node *node) {
     store_val();
     return;
   case ND_IF:
-    /* if (node->cond) { */
-    /* } else { */
-    /* } */
     conditional_c++;
-    code_gen(node->cond);
-    printf("  pop rax\n");
-    printf("  cmp rax, 0\n");
-    printf("  je .L.end.%d\n", conditional_c);
-    code_gen(node->stmt);
-    printf(".L.end.%d:\n", conditional_c);
+    if (node->els) {
+      code_gen(node->cond);
+      printf("  pop rax\n");
+      printf("  cmp rax, 0\n");
+      printf("  je .L.else.%d\n", conditional_c);
+      code_gen(node->then);
+      printf("  jmp .L.end.%d\n", conditional_c);
+      printf(".L.else.%d:\n", conditional_c);
+      code_gen(node->els);
+      printf(".L.end.%d:\n", conditional_c);
+    } else {
+      code_gen(node->cond);
+      printf("  pop rax\n");
+      printf("  cmp rax, 0\n");
+      printf("  je .L.end.%d\n", conditional_c);
+      code_gen(node->then);
+      printf(".L.end.%d:\n", conditional_c);
+    }
     return;
   case ND_RETURN:
     code_gen(node->rhs);

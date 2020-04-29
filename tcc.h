@@ -102,7 +102,8 @@ struct Node {
   Node *stmt; // statement
 
   // IF statement
-  Node *els; // else side
+  Node *els; // else
+  Node *then; // then
 
   Var *var; // Variable
 
