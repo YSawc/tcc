@@ -51,7 +51,7 @@ char *strTypeOfVar(char *s, int l) {
 }
 
 char *strtoalpha(char *s) {
-  char *strArr = malloc(24);
+  char *strArr = calloc(1, 24);
   for (int i = 0; s[i] != '\0'; i++) {
     if (isalpha(s[i])) {
       strArr[i] = s[i];

@@ -57,7 +57,6 @@ bool at_eof(void);
 Token *consume(char *op);
 Token *consume_ident(void);
 Token *tokenize(void);
-void assign_var_offset();
 
 extern char *user_input;
 extern Token *token;
@@ -75,9 +74,6 @@ struct Var {
 };
 
 Var *new_lvar(char *name);
-Var *find_var(char *str);
-
-void emit_rsp(void);
 
 // AST node
 typedef enum {
@@ -115,7 +111,18 @@ struct Node {
   char *str; // Token string
 };
 
-Node *gen();
+typedef struct Function Function;
+struct Function {
+  Node *node;
+  Var *lVars;
+  int stack_size;
+};
+
+Function *gen_program(void);
+void assign_var_offset(Function *function);
+void emit_rsp(Function *function);
+
+
 void code_gen(Node *node);
 
 extern Node *node;

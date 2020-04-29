@@ -44,6 +44,8 @@ assert 1 'return 1 > 0;'
 assert 1 'return 0 >= 0;'
 assert 0 'return 0 >= 1;'
 
+assert 26 'return 13 * 2;'
+
 assert 1 '0; return 1;'
 assert 0 '1; return 0;'
 

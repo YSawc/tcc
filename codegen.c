@@ -5,8 +5,7 @@ Var *lVars;
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
   if (node->kind == ND_VAR) {
-    int offset = (node->str[0] - 'a' + 1) * 8;
-    printf("  lea rax, [rbp-%d]\n", offset);
+    printf("  lea rax, [rbp-%d]\n", node->var->offset);
     printf("  push rax\n");
     return;
   }
@@ -35,33 +34,11 @@ Var *new_lvar(char *name) {
   return var;
 }
 
-Var *find_var(char *str) {
-  for (Var *v = lVars; v; v = v->next) {
-    if (strlen(v->name) == strlen(str) && !strncmp(v->name, str, strlen(str)))
+static Var *find_var(Token *tok) {
+  for (Var *v = lVars; v; v = v->next)
+    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
       return v;
-    return NULL;
-  }
   return NULL;
-}
-
-void assign_var_offset() {
-  int i = 0;
-  for (Var *v = lVars; v; v = v->next) {
-    i++;
-    v->offset = i * 8;
-  }
-}
-
-void emit_rsp() {
-  // shift rsp counter counts of local variable.
-  if (lVars) {
-    int i = 0;
-    for (Var *v = lVars; v; v = v->next)
-      i++;
-    printf("  sub rsp, %d\n", i * 8);
-  } else {
-    printf("  sub rsp, 0\n");
-  };
 }
 
 static Node *new_node(NodeKind kind) {
@@ -106,9 +83,43 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
 
-Node *gen() {
-  Node *node = stmt();
-  return node;
+// program = stmt*
+Function *gen_program(void) {
+  lVars = NULL;
+
+  Node head = {};
+  Node *cur = &head;
+
+  while (!at_eof()) {
+    cur->next = stmt();
+    cur = cur->next;
+  }
+
+  Function *prog = calloc(1, sizeof(Function));
+  prog->node = head.next;
+  prog->lVars = lVars ;
+  return prog;
+}
+
+void assign_var_offset(Function *function) {
+  int i = 0;
+  for (Var *v = function->lVars; v; v = v->next) {
+    i++;
+    v->offset = i * 8;
+  }
+}
+
+// emit rsp counts of variables in function.
+void emit_rsp(Function *function) {
+  // shift rsp counter counts of local variable.
+  if (function->lVars) {
+    int i = 0;
+    for (Var *v = function->lVars; v; v = v->next)
+      i++;
+    printf("  sub rsp, %d\n", i * 8);
+  } else {
+    printf("  sub rsp, 0\n");
+  };
 }
 
 /* stmt ("return")* relational ";" */
@@ -222,16 +233,12 @@ static Node *primary_expr(void) {
   Token *tok = consume_ident();
   if (tok) {
     // find variable. If detected, return var_node.
-    Var *var = find_var(tok->str);
-    if (!var) {
-      lVars = new_lvar(tok->str);
-      /* lVars = lVars->next; */
-      Var *var = find_var(tok->str);
-      return new_var_node(var);
-    } else {
-      return new_var_node(var);
-    }
+    Var *var = find_var(tok);
+    if (!var)
+      var = new_lvar(tok->str);
+    return new_var_node(var);
   }
+
   return new_num(expect_number());
 }
 

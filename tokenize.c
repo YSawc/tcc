@@ -135,11 +135,6 @@ Token *tokenize(void) {
     // alpha literal
     if (isalpha(*p)) {
       char *tmp = strtoalpha(p);
-      /* Var *var = find_var(tmp); */
-      /* if (!var) { */
-      /*   var = new_lvar(tmp); */
-      /*   var = var->next; */
-      /* } */
       p += strlen(tmp);
       cur = new_token(TK_IDENT, cur, tmp, strlen(tmp));
       continue;
@@ -148,7 +143,7 @@ Token *tokenize(void) {
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);
-      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), 1);
+      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), l);
       char *q = p;
       cur->val = strtol(p, &p, 10);
       cur->len = p - q;
