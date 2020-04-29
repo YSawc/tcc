@@ -38,6 +38,17 @@ Token *tokenize(void) {
   Token head = {};
   Token *cur = &head;
 
+  // list of reserved multiple letter.
+  static char *rmw[] = {
+      "==", "!=", "<=", "=>", ">=", "=<",
+
+  };
+
+  // list of reserved single letter.
+  static char rsw[] = {
+      '+', '-', '*', '/', '(', ')', ';', '=', '<', '>',
+  };
+
   while (*p) {
 
     // WhiteSpace literal
@@ -46,90 +57,23 @@ Token *tokenize(void) {
       continue;
     };
 
-    // Add literal
-    if (*p == '+') {
-      cur = new_token(TK_PLUS, cur, "+", 1);
-      p++;
-      continue;
+    // Detector in list of reserved multiple letter
+    for (int i = 0; i < sizeof(rmw) / sizeof(*rmw); i++) {
+      int tmp_len = strlen(rmw[i]);
+      if (startswith(p, rmw[i])) {
+        cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
+        p += tmp_len;
+        continue;
+      }
     }
 
-    // Sub literal
-    if (*p == '-') {
-      cur = new_token(TK_MINUS, cur, "-", 1);
-      p++;
-      continue;
-    }
-
-    // Asterisk literal
-    if (*p == '*') {
-      cur = new_token(TK_ASTERISC, cur, "*", 1);
-      p++;
-      continue;
-    }
-
-    // Slash literal
-    if (*p == '/') {
-      cur = new_token(TK_SLASH, cur, "/", 1);
-      p++;
-      continue;
-    }
-
-    // LParen literal
-    if (*p == '(') {
-      cur = new_token(TK_LPAREN, cur, "(", 1);
-      p++;
-      continue;
-    }
-
-    // RParen literal
-    if (*p == ')') {
-      cur = new_token(TK_RPAREN, cur, ")", 1);
-      p++;
-      continue;
-    }
-
-    // RParen literal
-    if (*p == ')') {
-      cur = new_token(TK_RPAREN, cur, ")", 1);
-      p++;
-      continue;
-    }
-
-    // RParen literal
-    if (*p == ';') {
-      cur = new_token(TK_STMT, cur, ";", 1);
-      p++;
-      continue;
-    }
-
-    // Comparison literal
-    if ((startswith(p, "==")) || (startswith(p, "!=")) ||
-        (startswith(p, "<=")) || (startswith(p, "=>")) ||
-        (startswith(p, ">=")) || (startswith(p, "=<"))) {
-      cur = new_token(TK_COMPARISON, cur, strTypeOfVar(p, 2), 2);
-      p += 2;
-      continue;
-    }
-
-    // Assign literal
-    if (*p == '=') {
-      cur = new_token(TK_ASSIGN, cur, "=", 1);
-      p++;
-      continue;
-    }
-
-    // Comparison literal
-    if ((*p == '<') || (*p == '>')) {
-      cur = new_token(TK_COMPARISON, cur, strTypeOfVar(p, 1), 1);
-      p++;
-      continue;
-    }
-
-    // return literal
-    if (startswith(p, "return")) {
-      cur = new_token(TK_RETURN, cur, strTypeOfVar(p, 6), 6);
-      p += 6;
-      continue;
+    // Detector in list of reserved single letter
+    for (int i = 0; i < sizeof(rsw) / sizeof(*rsw); i++) {
+      if (*p == rsw[i]) {
+        cur = new_token(TK_RESERVED, cur, p, 1);
+        p++;
+        continue;
+      }
     }
 
     // alpha literal
@@ -149,13 +93,6 @@ Token *tokenize(void) {
       cur->len = p - q;
       continue;
     };
-
-    // Identifier
-    /* if ('a' <= *p && *p <= 'z') { */
-    /*   cur = new_token(TK_IDENT, cur, strTypeOfVar(p, 1), 1); */
-    /*   p++; */
-    /*   continue; */
-    /* } */
   }
   cur = new_token(TK_EOF, cur, p, 1);
   return head.next;

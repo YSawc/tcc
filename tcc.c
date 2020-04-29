@@ -15,11 +15,18 @@ static void emit_global() {
   token = tokenize();
 
   Function *function = gen_program();
+
+  int i = 0;
+  for (Var *v = function->lVars; v; v = v->next) {
+    i++;
+    v->offset = i * 8;
+  }
+
   // Variable created this phase, so assign each variable with offset.
   assign_var_offset(function);
   emit_rsp(function);
 
-  for (Node *node = function->node ; node; node = node->next) {
+  for (Node *node = function->node; node; node = node->next) {
     code_gen(node);
   }
 }
@@ -46,39 +53,7 @@ int main(int argc, char **argv) {
   }
   user_input = argv[1];
 
-  /* gen_code(); */
-  /* emit_prologue(); */
-  /* emit_data(); */
-  /* emit_end(); */
-
-  printf("  .intel_syntax noprefix\n");
-  printf("  .global main\n");
-  printf("main:\n");
-  printf("  push rbp\n");
-  printf("  mov rbp, rsp\n");
-
-  token = tokenize();
-
-  Function *function = gen_program();
-  // Variable created this phase, so assign each variable with offset.
-  /* assign_var_offset(function); */
-
-  int i = 0;
-  for (Var *v = function->lVars; v; v = v->next) {
-    i++;
-    v->offset = i * 8;
-  }
-
-  emit_rsp(function);
-
-  for (Node *node = function->node ; node; node = node->next) {
-    code_gen(node);
-  }
-
-  printf(".L.return:\n");
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  printf("  ret\n");
+  gen_code();
 
   return 0;
 }

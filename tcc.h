@@ -28,6 +28,7 @@ int lenIsDigit(char *s);
 
 // Token
 typedef enum {
+  TK_RESERVED,   // Reserved literal
   TK_NUM,        // Integer literal
   TK_PLUS,       // Plus literal
   TK_MINUS,      // Minux literal
@@ -121,7 +122,6 @@ struct Function {
 Function *gen_program(void);
 void assign_var_offset(Function *function);
 void emit_rsp(Function *function);
-
 
 void code_gen(Node *node);
 

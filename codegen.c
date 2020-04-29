@@ -97,7 +97,7 @@ Function *gen_program(void) {
 
   Function *prog = calloc(1, sizeof(Function));
   prog->node = head.next;
-  prog->lVars = lVars ;
+  prog->lVars = lVars;
   return prog;
 }
 
