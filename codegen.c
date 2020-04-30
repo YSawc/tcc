@@ -156,13 +156,13 @@ static Node *stmt() {
     Node head = {};
     Node *cur = &head;
 
-    while(!consume("}")) {
-      cur->next =stmt();
+    while (!consume("}")) {
+      cur->next = stmt();
       cur = cur->next;
     }
 
     Node *node = new_node(ND_BLOCK);
-    node->block= head.next;
+    node->block = head.next;
     return node;
   }
 
@@ -258,7 +258,10 @@ static Node *unary() {
   }
 }
 
-/* primary_expr = ( NUM | Ident | "(" add ")" ) */
+/* primary_expr = NUM */
+/*              | Ident ("()")? */
+/*              | Ident */
+/*              | "(" add ")" ) */
 static Node *primary_expr(void) {
   if (consume("(")) {
     node = add();
@@ -268,6 +271,13 @@ static Node *primary_expr(void) {
 
   Token *tok = consume_ident();
   if (tok) {
+    if (consume("(")) {
+      expect(')');
+      Node *node = new_node(ND_FNC);
+      node->str = tok->str;
+      return node;
+    }
+
     // find variable. If detected, return var_node.
     Var *var = find_var(tok);
     if (!var)
@@ -314,6 +324,10 @@ void code_gen(Node *node) {
       code_gen(node->then);
       printf(".L.end.%d:\n", conditional_c);
     }
+    return;
+  case ND_FNC:
+    printf("  call %s\n", node->str);
+    printf("  push rax\n");
     return;
   case ND_BLOCK:
     for (Node *n = node->block; n; n = n->next)

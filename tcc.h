@@ -86,6 +86,7 @@ typedef enum {
   ND_ELS,    // If
   ND_EOF,    // EOF
   ND_VAR,    // Variable
+  ND_FNC,    // Function
   ND_ASSIGN, // =
   ND_BLOCK,  // {}
 } NodeKind;

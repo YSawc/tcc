@@ -81,7 +81,7 @@ Token *tokenize(void) {
       int tmp_len = strlen(mSt[i]);
       if (startswith(p, mSt[i])) {
         cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
-        p+= tmp_len;
+        p += tmp_len;
         continue;
       }
     }
