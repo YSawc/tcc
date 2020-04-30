@@ -130,8 +130,9 @@ void emit_rsp(Function *function) {
   };
 }
 
-/* stmt = ("return")* relational ";"
- *      | ("if")* equality ";" */
+/* stmt = "return" expr ";" */
+/*      | "if" "(" cond ")" stmt ("else" stmt)?  */
+/*      | "{" stmt* "}" */
 static Node *stmt() {
   if (consume("return")) {
     Node *node = new_uarray(ND_RETURN, assign());
@@ -148,6 +149,20 @@ static Node *stmt() {
     if (consume("else")) {
       node->els = stmt();
     }
+    return node;
+  }
+
+  if (consume("{")) {
+    Node head = {};
+    Node *cur = &head;
+
+    while(!consume("}")) {
+      cur->next =stmt();
+      cur = cur->next;
+    }
+
+    Node *node = new_node(ND_BLOCK);
+    node->block= head.next;
     return node;
   }
 
@@ -299,6 +314,10 @@ void code_gen(Node *node) {
       code_gen(node->then);
       printf(".L.end.%d:\n", conditional_c);
     }
+    return;
+  case ND_BLOCK:
+    for (Node *n = node->block; n; n = n->next)
+      code_gen(n);
     return;
   case ND_RETURN:
     code_gen(node->rhs);

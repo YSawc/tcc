@@ -87,6 +87,7 @@ typedef enum {
   ND_EOF,    // EOF
   ND_VAR,    // Variable
   ND_ASSIGN, // =
+  ND_BLOCK,  // {}
 } NodeKind;
 
 // Token type
@@ -101,9 +102,12 @@ struct Node {
   Node *cond; // condition
   Node *stmt; // statement
 
-  // IF statement
-  Node *els; // else
+  // If
+  Node *els;  // else
   Node *then; // then
+
+  // Block
+  Node *block;
 
   Var *var; // Variable
 

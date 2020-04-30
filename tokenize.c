@@ -43,7 +43,7 @@ Token *tokenize(void) {
 
   // list of reserved single letter.symbol
   static char sSym[] = {
-      '+', '-', '*', '/', '(', ')', ';', '=', '<', '>',
+      '+', '-', '*', '/', '(', ')', '{', '}', ';', '=', '<', '>',
   };
 
   // list of reserved multiple letter.string
