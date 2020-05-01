@@ -159,6 +159,15 @@ static Node *stmt() {
     return node;
   }
 
+  if (consume("while")) {
+    Node *node = new_node(ND_WHILE);
+    expect('(');
+    node->cond = equality();
+    expect(')');
+    node->stmt= stmt();
+    return node;
+  }
+
   if (consume("{")) {
     Node head = {};
     Node *cur = &head;
@@ -331,6 +340,17 @@ void code_gen(Node *node) {
       code_gen(node->then);
       printf(".L.end.%d:\n", conditional_c);
     }
+    return;
+  case ND_WHILE:
+    conditional_c++;
+    printf(".L.begin.%d:\n", conditional_c);
+    code_gen(node->cond);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je .L.end.%d\n", conditional_c);
+    code_gen(node->stmt);
+    printf("  jmp .L.begin.%d\n", conditional_c);
+    printf(".L.end.%d:\n", conditional_c);
     return;
   case ND_FNC:
     printf("  call %s\n", node->str);

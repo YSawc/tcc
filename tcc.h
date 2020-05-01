@@ -84,6 +84,7 @@ typedef enum {
   ND_STMT,   // ;
   ND_RETURN, // Return
   ND_IF,     // If
+  ND_WHILE,  // While
   ND_ELS,    // If
   ND_EOF,    // EOF
   ND_VAR,    // Variable

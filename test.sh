@@ -78,4 +78,6 @@ assert 1 'main() { {return 1;} return 2; return 3; }'
 assert 3 'main() { return retThree(); }'
 assert 6 'main() { return retThree() * 2; }'
 
+assert 3 'main() { i = 3; while(0) 0; return i; }'
+
 echo OK
