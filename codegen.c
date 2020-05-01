@@ -1,6 +1,7 @@
 #include "tcc.h"
 
 Var *lVars;
+static char *func_name;
 
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
@@ -98,12 +99,18 @@ Function *gen_program(void) {
   Node head = {};
   Node *cur = &head;
 
-  while (!at_eof()) {
+  func_name = expect_ident();
+  expect('(');
+  expect(')');
+  expect('{');
+
+  while (!consume("}")) {
     cur->next = stmt();
     cur = cur->next;
   }
 
   Function *prog = calloc(1, sizeof(Function));
+  prog->name = func_name;
   prog->node = head.next;
   prog->lVars = lVars;
   return prog;
@@ -336,7 +343,7 @@ void code_gen(Node *node) {
   case ND_RETURN:
     code_gen(node->rhs);
     printf("  pop rax\n");
-    printf("  jmp .L.return\n");
+    printf("  jmp .L.return.%s\n", func_name);
     return;
   default:;
   }

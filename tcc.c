@@ -7,14 +7,24 @@ static void emit_prologue() {
   printf("  .global main\n");
 }
 
-static void emit_global() {
-  printf("main:\n");
+static void emit_in_function(Function *function) {
+  printf("%s:\n", function->name);
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
+}
 
+static void emit_out_function(Function *function) {
+  printf(".L.return.%s:\n", function->name);
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
+  printf("  ret\n");
+}
+
+static void emit_data() {
   token = tokenize();
-
   Function *function = gen_program();
+
+  emit_in_function(function);
 
   int i = 0;
   for (Var *v = function->lVars; v; v = v->next) {
@@ -29,21 +39,13 @@ static void emit_global() {
   for (Node *node = function->node; node; node = node->next) {
     code_gen(node);
   }
-}
 
-static void emit_data() { emit_global(); }
-
-static void emit_end() {
-  printf(".L.return:\n");
-  printf("  mov rsp, rbp\n");
-  printf("  pop rbp\n");
-  printf("  ret\n");
+  emit_out_function(function);
 }
 
 static void gen_code() {
   emit_prologue();
   emit_data();
-  emit_end();
 }
 
 int main(int argc, char **argv) {

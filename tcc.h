@@ -47,6 +47,7 @@ struct Token {
 
 bool at_eof(void);
 Token *consume(char *op);
+char *expect_ident(void);
 Token *consume_ident(void);
 Token *tokenize(void);
 
@@ -118,6 +119,7 @@ struct Node {
 
 typedef struct Function Function;
 struct Function {
+  char *name;
   Node *node;
   Var *lVars;
   int stack_size;

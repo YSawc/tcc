@@ -23,6 +23,15 @@ Token *consume_ident(void) {
   return t;
 }
 
+// Expect ident.
+char *expect_ident(void) {
+  if (token->kind != TK_IDENT)
+    error_at(token->str, "Expect ident token.");
+  char *s = token->str;
+  token = token->next;
+  return s;
+}
+
 // create new token
 static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   Token *tok = calloc(1, sizeof(Token)); // flag with prologue.
