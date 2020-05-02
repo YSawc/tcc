@@ -83,4 +83,6 @@ assert 6 'int main() { return retThree() * 2; }'
 assert 3 'int main() { int i = 3; while(0) 0; return i; }'
 assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'
 
+assert 8 'int main() { int i = 6; return sizeof(i); }'
+
 echo OK

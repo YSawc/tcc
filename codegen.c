@@ -30,6 +30,7 @@ static void store_val(void) {
 Var *new_lvar(char *name) {
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
+  var->typeKind = TYPE_INT;
   var->name = name;
   lVars = var;
   return var;
@@ -289,6 +290,7 @@ static Node *unary() {
 /*              | Ident ("()")? */
 /*              | Ident */
 /*              | "(" add ")" ) */
+/*              | "sizeof" "(" add ")" */
 static Node *primary_expr(void) {
   if (consume("(")) {
     node = add();
@@ -313,6 +315,20 @@ static Node *primary_expr(void) {
     if (!var)
       var = new_lvar(tok->str);
     return new_var_node(var);
+  }
+
+  if (consume("sizeof")) {
+    Node *node = calloc(1, sizeof(Node));
+    expect('(');
+    Token *tok = consume_ident();
+    if (!tok)
+      error_at(tok->str, "expected ident.");
+    Var *var = find_var(tok);
+    if (!var)
+      error_at(tok->str, "expected declaration variable.");
+    node = new_num(type_size(var));
+    expect(')');
+    return node;
   }
 
   return new_num(expect_number());

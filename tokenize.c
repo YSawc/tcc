@@ -64,7 +64,7 @@ Token *tokenize(void) {
   };
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if", "else", "while", "int"};
+  static char *mSt[] = {"if", "else", "while", "int", "sizeof"};
 
   while (*p) {
 

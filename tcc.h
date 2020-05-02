@@ -55,16 +55,29 @@ Token *tokenize(void);
 extern char *user_input;
 extern Token *token;
 
+typedef struct Var Var;
+//
+// type.c
+//
+
+typedef enum {
+  TYPE_INT, // int
+} TypeKind;
+
+typedef struct Var Var; // from codegen.c
+int type_size(Var *var);
+
 //
 // codegen.c
 //
 
 // Local variable
-typedef struct Var Var;
+// typedef struct Var Var;
 struct Var {
   Var *next;
-  char *name; // Variable name
-  int offset; // Offset from RBP
+  char *name;        // Variable name
+  int offset;        // Offset from RBP
+  TypeKind typeKind; // typekind
 };
 
 Var *new_lvar(char *name);
