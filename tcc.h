@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct Type Type;
+typedef struct Type Type; // from type.c
 
 //
 // util.c
@@ -55,29 +55,34 @@ Token *tokenize(void);
 extern char *user_input;
 extern Token *token;
 
-typedef struct Var Var;
 //
 // type.c
 //
 
 typedef enum {
-  TYPE_INT, // int
+  TYPE_INT,
 } TypeKind;
 
-typedef struct Var Var; // from codegen.c
-int type_size(Var *var);
+// typedef struct Var Var; // from codegen.c
+typedef struct Type Type;
+struct Type {
+  TypeKind typekind;
+  int type_size; // value of sizeof
+};
+
+extern Type *type_int;
 
 //
 // codegen.c
 //
 
 // Local variable
-// typedef struct Var Var;
+typedef struct Var Var;
 struct Var {
   Var *next;
-  char *name;        // Variable name
-  int offset;        // Offset from RBP
-  TypeKind typeKind; // typekind
+  char *name; // Variable name
+  int offset; // Offset from RBP
+  Type type;  // type
 };
 
 Var *new_lvar(char *name);

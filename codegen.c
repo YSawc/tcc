@@ -26,7 +26,7 @@ static void store_val(void) {
 Var *new_lvar(char *name) {
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-  var->typeKind = TYPE_INT;
+  var->type = *type_int;
   var->name = name;
   lVars = var;
   return var;
@@ -327,7 +327,7 @@ static Node *primary_expr(void) {
     Var *var = find_var(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
-    node = new_num(type_size(var));
+    node = new_num(var->type.type_size);
     expect(')');
     return node;
   }
