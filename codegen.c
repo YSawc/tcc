@@ -5,13 +5,9 @@ static char *func_name;
 
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
-  if (node->kind == ND_VAR) {
-    printf("  lea rax, [rbp-%d]\n", node->var->offset);
-    printf("  push rax\n");
-    return;
-  }
-
-  error_at(token->str, "not an lvalue");
+  printf("  lea rax, [rbp-%d]\n", node->var->offset);
+  printf("  push rax\n");
+  return;
 }
 
 static void load_val(void) {
@@ -265,9 +261,9 @@ static Node *mul() {
     node = new_binary(ND_MUL, node, primary_expr());
   } else if (consume("/")) {
     node = new_binary(ND_DIV, node, primary_expr());
-  } else {
-    return node;
   }
+
+  return node;
 }
 
 /* unary = ( "+" | "-" | "*" | "&" )? primary_expr */
@@ -279,7 +275,13 @@ static Node *unary() {
   } else if (consume("*")) {
     return new_uarray(ND_REF, unary());
   } else if (consume("&")) {
-    return new_uarray(ND_ADDR, unary());
+    Token *tok = consume_ident();
+    if (!tok)
+      error_at(tok->str, "ident not found.");
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_ADDR;
+    node->var = find_var(tok);
+    return node;
   } else {
     return primary_expr();
   }
@@ -350,7 +352,7 @@ void code_gen(Node *node) {
     store_val();
     return;
   case ND_ADDR:
-    gen_var_addr(node->rhs);
+    gen_var_addr(node);
     return;
   case ND_REF:
     code_gen(node->rhs);
