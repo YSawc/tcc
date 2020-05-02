@@ -247,42 +247,41 @@ static Node *relational(void) {
 static Node *add() {
   Node *node = mul();
 
-  for (;;) {
-    if (consume("+")) {
-      node = new_binary(ND_ADD, node, primary_expr());
-    } else if (consume("-")) {
-      node = new_binary(ND_SUB, node, primary_expr());
-    } else {
-      return node;
-    }
+  if (consume("+")) {
+    node = new_binary(ND_ADD, node, primary_expr());
+  } else if (consume("-")) {
+    node = new_binary(ND_SUB, node, primary_expr());
   }
+
+  return node;
+  /* } */
 }
 
 /* mul = unary ( "*" unary | "/" unary )* */
 static Node *mul() {
   Node *node = unary();
 
-  for (;;) {
-    if (consume("*")) {
-      node = new_binary(ND_MUL, node, primary_expr());
-    } else if (consume("/")) {
-      node = new_binary(ND_DIV, node, primary_expr());
-    } else {
-      return node;
-    }
+  if (consume("*")) {
+    node = new_binary(ND_MUL, node, primary_expr());
+  } else if (consume("/")) {
+    node = new_binary(ND_DIV, node, primary_expr());
+  } else {
+    return node;
   }
 }
 
-/* unary = ( "+" | "-" )? primary_expr */
+/* unary = ( "+" | "-" | "*" | "&" )? primary_expr */
 static Node *unary() {
-  for (;;) {
-    if (consume("+")) {
-      return unary();
-    } else if (consume("-")) {
-      return new_binary(ND_SUB, new_num(0), unary());
-    } else {
-      return primary_expr();
-    }
+  if (consume("+")) {
+    return unary();
+  } else if (consume("-")) {
+    return new_binary(ND_SUB, new_num(0), unary());
+  } else if (consume("*")) {
+    return new_uarray(ND_REF, unary());
+  } else if (consume("&")) {
+    return new_uarray(ND_ADDR, unary());
+  } else {
+    return primary_expr();
   }
 }
 
@@ -349,6 +348,13 @@ void code_gen(Node *node) {
     gen_var_addr(node->lhs);
     code_gen(node->rhs);
     store_val();
+    return;
+  case ND_ADDR:
+    gen_var_addr(node->rhs);
+    return;
+  case ND_REF:
+    code_gen(node->rhs);
+    load_val();
     return;
   case ND_IF:
     conditional_c++;

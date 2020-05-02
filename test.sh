@@ -85,4 +85,9 @@ assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'
 
 assert 8 'int main() { int i = 6; return sizeof(i); }'
 
+assert 3 'int main() { int x=3; return *&x; }'
+assert 3 'int main() { int x=3; int y = &x; int z = &y; return **z; }'
+assert 3 'int main() { int x=3; int y=5; return *(&y-8); }'
+assert 5 'int main() { int x=3; int y=5; return *(&x+8); }'
+
 echo OK
