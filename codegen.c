@@ -82,6 +82,15 @@ static Node *new_var_node(Var *var) {
   return node;
 }
 
+static Node *expect_dec() {
+  Token *tok = consume_ident();
+  Var *var = find_var(tok);
+  if (var)
+    error_at(tok->str, "multiple declaration.");
+  var = new_lvar(tok->str);
+  return new_var_node(var);
+}
+
 static Node *stmt(void);
 static Node *assign(void);
 static Node *equality(void);
@@ -99,6 +108,7 @@ Function *gen_program(void) {
   Node head = {};
   Node *cur = &head;
 
+  expect_str("int");
   func_name = expect_ident();
   expect('(');
   expect(')');
@@ -165,7 +175,7 @@ static Node *stmt() {
     expect('(');
     node->cond = equality();
     expect(')');
-    node->stmt= stmt();
+    node->stmt = stmt();
     return node;
   }
 
@@ -285,6 +295,9 @@ static Node *primary_expr(void) {
     expect(')');
     return node;
   }
+
+  if (consume("int"))
+    return expect_dec();
 
   Token *tok = consume_ident();
   if (tok) {

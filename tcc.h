@@ -47,6 +47,7 @@ struct Token {
 
 bool at_eof(void);
 Token *consume(char *op);
+Token *expect_str(char *str);
 char *expect_ident(void);
 Token *consume_ident(void);
 Token *tokenize(void);

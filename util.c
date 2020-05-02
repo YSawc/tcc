@@ -18,9 +18,7 @@ void error_at(char *loc, char *fmt, ...) {
   exit(1);
 }
 
-bool startswith(char *p, char *q) {
-  return strncmp(p, q, strlen(q)) == 0;
-}
+bool startswith(char *p, char *q) { return strncmp(p, q, strlen(q)) == 0; }
 
 void expect(char op) {
   if (token->str[0] != op)
@@ -39,7 +37,8 @@ long expect_number(void) {
 char *singleCharToString(char c) {
   char *s = malloc(2);
   s[0] = c;
-  s[1] = '\0';  return s;
+  s[1] = '\0';
+  return s;
 }
 
 char *strTypeOfVar(char *s, int l) {

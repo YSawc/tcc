@@ -19,68 +19,68 @@ assert() {
   fi
 }
 
-assert 0 'main(){ return 0; }'
-assert 42 'main(){ return 42;}'
+assert 0 'int main(){ return 0; }'
+assert 42 'int main(){ return 42;}'
 
-assert 7 'main() { return 5+2; }'
-assert 3 'main() { return 5-2; }'
+assert 7 'int main() { return 5+2; }'
+assert 3 'int main() { return 5-2; }'
 
-assert 10 'main() { return 5* 2; }'
-assert 3 'main() { return 6 /2; }'
+assert 10 'int main() { return 5* 2; }'
+assert 3 'int main() { return 6 /2; }'
 
-assert 5 'main() { return +5; }'
-assert 10 'main() { return --10; }'
+assert 5 'int main() { return +5; }'
+assert 10 'int main() { return --10; }'
 
-assert 2 'main() { return 10 /(2 + 3 ); }'
-assert 11 'main() { return 2 + ( 3 * 3 );}';
+assert 2 'int main() { return 10 /(2 + 3 ); }'
+assert 11 'int main() { return 2 + ( 3 * 3 );}';
 
-assert 1 'main() { return 0 == 0; }'
-assert 0 'main() { return 0 == 1; }'
-assert 0 'main() { return 0 != 0; }'
-assert 1 'main() { return 0 != 1; }'
-assert 1 'main() { return 0 < 1; }'
-assert 0 'main() { return 0 < 0; }'
-assert 1 'main() { return 0 <= 0; }'
-assert 0 'main() { return 1 <= 0; }'
-assert 0 'main() { return 0 > 0; }'
-assert 1 'main() { return 1 > 0; }'
-assert 1 'main() { return 0 >= 0; }'
-assert 0 'main() { return 0 >= 1; }'
+assert 1 'int main() { return 0 == 0; }'
+assert 0 'int main() { return 0 == 1; }'
+assert 0 'int main() { return 0 != 0; }'
+assert 1 'int main() { return 0 != 1; }'
+assert 1 'int main() { return 0 < 1; }'
+assert 0 'int main() { return 0 < 0; }'
+assert 1 'int main() { return 0 <= 0; }'
+assert 0 'int main() { return 1 <= 0; }'
+assert 0 'int main() { return 0 > 0; }'
+assert 1 'int main() { return 1 > 0; }'
+assert 1 'int main() { return 0 >= 0; }'
+assert 0 'int main() { return 0 >= 1; }'
 
-assert 26 'main() { return 13 * 2; }'
+assert 26 'int main() { return 13 * 2; }'
 
-assert 1 'main() { 0; return 1; }'
-assert 0 'main() { 1; return 0; }'
+assert 1 'int main() { 0; return 1; }'
+assert 0 'int main() { 1; return 0; }'
 
-assert 2 'main() { 1; return 2; 3; }'
+assert 2 'int main() { 1; return 2; 3; }'
 
-assert 3 'main() { a=3; return a; }'
-assert 8 'main() { a=3; z=5; return a+z; }'
+assert 3 'int main() { int a=3; return a; }'
+assert 8 'int main() { int a=3; int z=5; return a+z; }'
 
-assert 4 'main() { a=3; a = a + 1; return a; }'
+assert 4 'int main() { int a=3; a = a + 1; return a; }'
 
-assert 3 'main() { ii = 3; return ii; }'
-assert 12 'main() { ii = 3; jj = 4; return ii * jj; }'
+assert 3 'int main() { int ii = 3; return ii; }'
+assert 12 'int main() { int ii = 3; int jj = 4; return ii * jj; }'
 
-assert 1 'main() { return 1; return 2; }'
+assert 1 'int main() { return 1; return 2; }'
 
-assert 1 'main() { if (1) return 1; return 2; }'
-assert 2 'main() { if (0) return 1; return 2; }'
+assert 1 'int main() { if (1) return 1; return 2; }'
+assert 2 'int main() { if (0) return 1; return 2; }'
 
-assert 1 'main() { if (1) return 1; else return 2; return 3; }'
-assert 2 'main() { if (0) return 1; else return 2; }'
+assert 1 'int main() { if (1) return 1; else return 2; return 3; }'
+assert 2 'int main() { if (0) return 1; else return 2; }'
 
-assert 2 'main() { if (0>1) return 1; else return 2; }'
+assert 2 'int main() { if (0>1) return 1; else return 2; }'
 
-assert 3 'main() { {1; {2;} return 3;} }'
+assert 3 'int main() { {1; {2;} return 3;} }'
 
-assert 1 'main() { return 1; {return 2;} return 3; }'
-assert 1 'main() { {return 1;} return 2; return 3; }'
+assert 1 'int main() { return 1; {return 2;} return 3; }'
+assert 1 'int main() { {return 1;} return 2; return 3; }'
 
-assert 3 'main() { return retThree(); }'
-assert 6 'main() { return retThree() * 2; }'
+assert 3 'int main() { return retThree(); }'
+assert 6 'int main() { return retThree() * 2; }'
 
-assert 3 'main() { i = 3; while(0) 0; return i; }'
-assert 10 'main() { i = 3; while(i<10) i = i + 1; return i; }'
+assert 3 'int main() { int i = 3; while(0) 0; return i; }'
+assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'
 
 echo OK

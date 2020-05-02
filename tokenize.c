@@ -14,6 +14,14 @@ Token *consume(char *op) {
   return t;
 }
 
+Token *expect_str(char *str) {
+  if (strlen(str) != token->len || strncmp(token->str, str, token->len))
+    error_at(str, "%s expected.");
+  Token *t = token;
+  token = token->next;
+  return t;
+}
+
 // Consumes the current token if it is an identifier.
 Token *consume_ident(void) {
   if (token->kind != TK_IDENT)
@@ -56,7 +64,7 @@ Token *tokenize(void) {
   };
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if", "else", "while"};
+  static char *mSt[] = {"if", "else", "while", "int"};
 
   while (*p) {
 
