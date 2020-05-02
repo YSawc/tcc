@@ -139,6 +139,7 @@ void emit_rsp(Function *function) {
 
 /* stmt = "return" expr ";" */
 /*      | "if" "(" cond ")" stmt ("else" stmt)?  */
+/*      | "while" "(" cond ")" stmt ";" */
 /*      | "{" stmt* "}" */
 static Node *stmt() {
   if (consume("return")) {
@@ -150,7 +151,7 @@ static Node *stmt() {
   if (consume("if")) {
     Node *node = new_node(ND_IF);
     expect('(');
-    node->cond = primary_expr();
+    node->cond = relational();
     expect(')');
     node->then = stmt();
     if (consume("else")) {
@@ -192,7 +193,7 @@ static Node *assign() {
   Node *node = equality();
 
   if (consume("=")) {
-    Node *n = new_binary(ND_ASSIGN, node, new_num(expect_number()));
+    Node *n = new_binary(ND_ASSIGN, node, add());
     return n;
   }
   return node;

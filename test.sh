@@ -57,6 +57,8 @@ assert 2 'main() { 1; return 2; 3; }'
 assert 3 'main() { a=3; return a; }'
 assert 8 'main() { a=3; z=5; return a+z; }'
 
+assert 4 'main() { a=3; a = a + 1; return a; }'
+
 assert 3 'main() { ii = 3; return ii; }'
 assert 12 'main() { ii = 3; jj = 4; return ii * jj; }'
 
@@ -68,7 +70,7 @@ assert 2 'main() { if (0) return 1; return 2; }'
 assert 1 'main() { if (1) return 1; else return 2; return 3; }'
 assert 2 'main() { if (0) return 1; else return 2; }'
 
-assert 2 'main() { if (0) return 1; else return 2; }'
+assert 2 'main() { if (0>1) return 1; else return 2; }'
 
 assert 3 'main() { {1; {2;} return 3;} }'
 
@@ -79,5 +81,6 @@ assert 3 'main() { return retThree(); }'
 assert 6 'main() { return retThree() * 2; }'
 
 assert 3 'main() { i = 3; while(0) 0; return i; }'
+assert 10 'main() { i = 3; while(i<10) i = i + 1; return i; }'
 
 echo OK
