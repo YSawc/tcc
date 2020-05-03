@@ -59,9 +59,8 @@ Token *tokenize(void) {
   static char *mSym[] = {"==", "!=", "<=", "=>", ">=", "=<"};
 
   // list of reserved single letter.symbol
-  static char sSym[] = {
-      '+', '-', '*', '&', '/', '(', ')', '{', '}', ';', '=', '<', '>',
-  };
+  static char sSym[] = {'+', '-', '*', '&', '/', '(', ')',
+                        '{', '}', ';', '=', '<', '>', ','};
 
   // list of reserved multiple letter.string
   static char *mSt[] = {"if", "else", "while", "int", "sizeof"};

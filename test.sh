@@ -1,6 +1,7 @@
 #!/bin/bash
 cat <<EOF | gcc -xc -c -o tmp2.o -
 int retThree() { return 3; }
+int add(int x, int y) { return x+y; }
 EOF
 assert() {
   expected="$1"
@@ -79,6 +80,8 @@ assert 1 'int main() { {return 1;} return 2; return 3; }'
 
 assert 3 'int main() { return retThree(); }'
 assert 6 'int main() { return retThree() * 2; }'
+
+assert 3 'int main() { return add(1, 2); }'
 
 assert 3 'int main() { int i = 3; while(0) 0; return i; }'
 assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'

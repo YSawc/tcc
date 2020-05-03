@@ -126,6 +126,8 @@ struct Node {
   Node *cond; // condition
   Node *stmt; // statement
 
+  Node *args; // Function
+
   // If
   Node *els;  // else
   Node *then; // then

@@ -1,6 +1,9 @@
 #include "tcc.h"
 
 Var *lVars;
+
+static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 static char *func_name;
 
 // Pushes the given node's address to the stack.
@@ -91,12 +94,26 @@ static Node *expect_dec() {
 static Node *stmt(void);
 static Node *assign(void);
 static Node *equality(void);
-static Node *assign(void);
 static Node *relational(void);
 static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
+
+static Node *func_args() {
+  if (consume(")"))
+    return NULL;
+
+  Node *head = add();
+  Node *cur = head;
+  while (consume(",")) {
+    cur->next = add();
+    /* cur->next = new_num(expect_number()); */
+    cur = cur->next;
+  }
+  expect(')');
+  return head;
+}
 
 // program = stmt*
 Function *gen_program(void) {
@@ -303,11 +320,13 @@ static Node *primary_expr(void) {
     return expect_dec();
 
   Token *tok = consume_ident();
+
   if (tok) {
+    // for function.
     if (consume("(")) {
-      expect(')');
       Node *node = new_node(ND_FNC);
       node->str = tok->str;
+      node->args = func_args();
       return node;
     }
 
@@ -390,10 +409,21 @@ void code_gen(Node *node) {
     printf("  jmp .L.begin.%d\n", conditional_c);
     printf(".L.end.%d:\n", conditional_c);
     return;
-  case ND_FNC:
+  case ND_FNC: {
+
+    int args_c = 0;
+    for (Node *arg = node->args; arg; arg = arg->next) {
+      code_gen(arg);
+      args_c++;
+    }
+
+    for (int i = args_c - 1; i >= 0; i--)
+      printf("  pop %s\n", arg_regs[i]);
+
     printf("  call %s\n", node->str);
     printf("  push rax\n");
     return;
+  }
   case ND_BLOCK:
     for (Node *n = node->block; n; n = n->next)
       code_gen(n);
