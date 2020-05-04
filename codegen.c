@@ -213,9 +213,11 @@ void emit_rsp(Function *function) {
   // shift rsp counter counts of local variable.
   if (function->lVars) {
     int i = 0;
+    // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
     for (Var *v = function->lVars; v; v = v->next)
-      i++;
-    printf("  sub rsp, %d\n", i * 8);
+      i+= v->type.type_size;
+    i = ((i + 8 - 1 ) / 8 ) * 8;
+    printf("  sub rsp, %d\n", i);
   } else {
     printf("  sub rsp, 0\n");
   };
