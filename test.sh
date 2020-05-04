@@ -93,4 +93,10 @@ assert 3 'int main() { int x=3; int y = &x; int z = &y; return **z; }'
 assert 3 'int main() { int x=3; int y=5; return *(&y-8); }'
 assert 5 'int main() { int x=3; int y=5; return *(&x+8); }'
 
+assert 0 'int x; int main() { return 0; }'
+assert 0 'int x; int main() { return x; }'
+assert 2 'int x; int main() { x = 2; return x; }'
+assert 0 'int x; int y; int main() { y = 2; return x; }'
+assert 2 'int x; int y; int main() { y = 2; return y; }'
+
 echo OK

@@ -1,6 +1,7 @@
 #include "tcc.h"
 
 Var *lVars;
+Var *gVars;
 
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
@@ -8,8 +9,13 @@ static char *func_name;
 
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
-  printf("  lea rax, [rbp-%d]\n", node->var->offset);
-  printf("  push rax\n");
+  Var *var = node->var;
+  if (var->is_local) {
+    printf("  lea rax, [rbp-%d]\n", var->offset);
+    printf("  push rax\n");
+  } else {
+    printf("  push offset %s\n", var->name);
+  }
   return;
 }
 
@@ -31,12 +37,20 @@ Var *new_lvar(char *name) {
   var->next = lVars;
   var->type = *type_int;
   var->name = name;
+  var->is_local = true;
   lVars = var;
   return var;
 }
 
-static Var *find_var(Token *tok) {
+static Var *find_lvar(Token *tok) {
   for (Var *v = lVars; v; v = v->next)
+    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
+      return v;
+  return NULL;
+}
+
+static Var *find_gvar(Token *tok) {
+  for (Var *v = gVars; v; v = v->next)
     if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
       return v;
   return NULL;
@@ -52,14 +66,6 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
   Node *node = new_node(kind);
   node->lhs = lhs;
   node->rhs = rhs;
-  return node;
-}
-
-static Node *new_stmt_node(NodeKind kind, Node *cond, Node *stmt) {
-  Node *node = calloc(1, sizeof(Node));
-  node->kind = kind;
-  node->cond = cond;
-  node->stmt = stmt;
   return node;
 }
 
@@ -84,7 +90,7 @@ static Node *new_var_node(Var *var) {
 
 static Node *expect_dec() {
   Token *tok = consume_ident();
-  Var *var = find_var(tok);
+  Var *var = find_lvar(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
   var = new_lvar(tok->str);
@@ -115,13 +121,39 @@ static Node *func_args() {
   return head;
 }
 
+static bool is_function(void) {
+  Token *tok = token;
+  expect_str("int");
+  bool isfunc = consume_ident() && consume("(");
+  token = tok;
+  return isfunc;
+}
+
+static void global_var() {
+  expect_str("int");
+  char *name = expect_ident();
+  expect(';');
+  Var *var = calloc(1, sizeof(Var));
+  var->next = gVars;
+  var->type = *type_int;
+  var->name = name;
+  gVars = var;
+}
+
 // program = stmt*
-Function *gen_program(void) {
+Program *gen_program(void) {
   lVars = NULL;
+  gVars = NULL;
 
   Node head = {};
   Node *cur = &head;
 
+  // detect global functoin.
+  while (!is_function()) {
+    global_var();
+  }
+
+  // in this scope, be in internal of function.
   expect_str("int");
   func_name = expect_ident();
   expect('(');
@@ -133,10 +165,13 @@ Function *gen_program(void) {
     cur = cur->next;
   }
 
-  Function *prog = calloc(1, sizeof(Function));
-  prog->name = func_name;
-  prog->node = head.next;
-  prog->lVars = lVars;
+  Program *prog = calloc(1, sizeof(Program));
+  Function *func = calloc(1, sizeof(Function));
+  func->name = func_name;
+  func->node = head.next;
+  func->lVars = lVars;
+  prog->func = func;
+  prog->gVars = gVars;
   return prog;
 }
 
@@ -297,7 +332,7 @@ static Node *unary() {
       error_at(tok->str, "ident not found.");
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_ADDR;
-    node->var = find_var(tok);
+    node->var = find_lvar(tok);
     return node;
   } else {
     return primary_expr();
@@ -330,11 +365,16 @@ static Node *primary_expr(void) {
       return node;
     }
 
-    // find variable. If detected, return var_node.
-    Var *var = find_var(tok);
-    if (!var)
-      var = new_lvar(tok->str);
-    return new_var_node(var);
+    // find local variable.
+    Var *lVar = find_lvar(tok);
+    if (lVar)
+      return new_var_node(lVar);
+
+    // find gloval variable.
+    Var *gVar = find_gvar(tok);
+    if (gVar)
+      return new_var_node(gVar);
+    error_at(token->str, "can't handle with undefined variable.");
   }
 
   if (consume("sizeof")) {
@@ -343,7 +383,7 @@ static Node *primary_expr(void) {
     Token *tok = consume_ident();
     if (!tok)
       error_at(tok->str, "expected ident.");
-    Var *var = find_var(tok);
+    Var *var = find_lvar(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
     node = new_num(var->type.type_size);
@@ -410,7 +450,6 @@ void code_gen(Node *node) {
     printf(".L.end.%d:\n", conditional_c);
     return;
   case ND_FNC: {
-
     int args_c = 0;
     for (Node *arg = node->args; arg; arg = arg->next) {
       code_gen(arg);

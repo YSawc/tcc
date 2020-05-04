@@ -83,6 +83,7 @@ struct Var {
   char *name; // Variable name
   int offset; // Offset from RBP
   Type type;  // type
+  bool is_local;  // true if local variable
 };
 
 Var *new_lvar(char *name);
@@ -149,7 +150,13 @@ struct Function {
   int stack_size;
 };
 
-Function *gen_program(void);
+typedef struct Program Program;
+struct Program {
+  Function *func;
+  Var *gVars;
+};
+
+Program *gen_program(void);
 void assign_var_offset(Function *function);
 void emit_rsp(Function *function);
 
