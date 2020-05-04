@@ -32,10 +32,18 @@ static void store_val(void) {
   printf("  push rdi\n");
 }
 
-Var *new_lvar(char *name) {
+static Var *new_lvar(char *name, char *type_s) {
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-  var->type = *type_int;
+
+  if (startswith(type_s, "int")) {
+    var->type = *type_int;
+  } else if (startswith(type_s, "char")) {
+    var->type = *type_char;
+  } else {
+    error_at(token->str, "expected type, but not detected.");
+  }
+
   var->name = name;
   var->is_local = true;
   lVars = var;
@@ -88,12 +96,12 @@ static Node *new_var_node(Var *var) {
   return node;
 }
 
-static Node *expect_dec() {
+static Node *expect_dec(char *type_s) {
   Token *tok = consume_ident();
   Var *var = find_lvar(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
-  var = new_lvar(tok->str);
+  var = new_lvar(tok->str, type_s);
   return new_var_node(var);
 }
 
@@ -121,12 +129,29 @@ static Node *func_args() {
   return head;
 }
 
-static bool is_function(void) {
+static bool is_function (void) {
   Token *tok = token;
   expect_str("int");
   bool isfunc = consume_ident() && consume("(");
   token = tok;
   return isfunc;
+}
+
+static char *look_type (void) {
+  // list of reserved multiple letter.string
+  static char *types[] = {"int", "char"};
+  bool b = false;
+  Token *tok = token;
+  char *s = NULL;
+
+  // Detector in list of reserved multiple letter string
+  for (int i = 0; i < sizeof(types) / sizeof(*types); i++) {
+    if (startswith(token->str, types[i])) {
+      s = types[i];
+      break;
+    }
+  }
+  return s;
 }
 
 static void global_var() {
@@ -178,8 +203,8 @@ Program *gen_program(void) {
 void assign_var_offset(Function *function) {
   int i = 0;
   for (Var *v = function->lVars; v; v = v->next) {
-    i++;
-    v->offset = i * 8;
+    i += v->type.type_size;
+    v->offset = i;
   }
 }
 
@@ -351,13 +376,16 @@ static Node *primary_expr(void) {
     return node;
   }
 
-  if (consume("int"))
-    return expect_dec();
+  char *type_s = look_type();
+  if (type_s) {
+    consume(type_s);
+    return expect_dec(type_s);
+  }
 
   Token *tok = consume_ident();
 
   if (tok) {
-    // for function.
+    // find function.
     if (consume("(")) {
       Node *node = new_node(ND_FNC);
       node->str = tok->str;

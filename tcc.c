@@ -20,7 +20,6 @@ static void emit_globals_data(Program *prog) {
     printf("%s:\n", var->name);
     printf("  .zero %d\n", var->type.type_size);
   }
-
 }
 
 static void emit_out_function(Function *function) {
@@ -40,8 +39,8 @@ static void emit_data() {
 
   int i = 0;
   for (Var *v = prog->func->lVars; v; v = v->next) {
-    i++;
-    v->offset = i * 8;
+    i += v->type.type_size;
+    v->offset = i;
   }
 
   // Variable created this phase, so assign each variable with offset.

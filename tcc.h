@@ -60,6 +60,7 @@ extern Token *token;
 //
 
 typedef enum {
+  TYPE_CHAR,
   TYPE_INT,
 } TypeKind;
 
@@ -71,6 +72,7 @@ struct Type {
 };
 
 extern Type *type_int;
+extern Type *type_char;
 
 //
 // codegen.c
@@ -85,8 +87,6 @@ struct Var {
   Type type;  // type
   bool is_local;  // true if local variable
 };
-
-Var *new_lvar(char *name);
 
 // AST node
 typedef enum {

@@ -99,4 +99,8 @@ assert 2 'int x; int main() { x = 2; return x; }'
 assert 0 'int x; int y; int main() { y = 2; return x; }'
 assert 2 'int x; int y; int main() { y = 2; return y; }'
 
+assert 1 'int main() { char c = 1; return c; }'
+assert 1 'int main() { int i = 10; char c = 1; return c; }'
+assert 2 'int main() { int i = 10; char c = 1; char h = 2; return h; }'
+
 echo OK
