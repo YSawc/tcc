@@ -129,7 +129,7 @@ static Node *func_args() {
   return head;
 }
 
-static bool is_function (void) {
+static bool is_function(void) {
   Token *tok = token;
   expect_str("int");
   bool isfunc = consume_ident() && consume("(");
@@ -137,7 +137,7 @@ static bool is_function (void) {
   return isfunc;
 }
 
-static char *look_type (void) {
+static char *look_type(void) {
   // list of reserved multiple letter.string
   static char *types[] = {"int", "char"};
   bool b = false;
@@ -215,8 +215,8 @@ void emit_rsp(Function *function) {
     int i = 0;
     // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
     for (Var *v = function->lVars; v; v = v->next)
-      i+= v->type.type_size;
-    i = ((i + 8 - 1 ) / 8 ) * 8;
+      i += v->type.type_size;
+    i = ((i + 8 - 1) / 8) * 8;
     printf("  sub rsp, %d\n", i);
   } else {
     printf("  sub rsp, 0\n");
@@ -488,8 +488,19 @@ void code_gen(Node *node) {
 
     for (int i = args_c - 1; i >= 0; i--)
       printf("  pop %s\n", arg_regs[i]);
-
+    printf("  mov rax, rsp\n");
+    printf("  and rax, 15\n");
+    printf("  jnz .L.call.1\n");
+    printf("  mov rax, 0\n");
     printf("  call %s\n", node->str);
+    printf("  jmp .L.end.1\n");
+    printf(".L.call.1:\n");
+    printf("  sub rsp, 8\n");
+    printf("  mov rax, 0\n");
+    printf("  call %s\n", node->str);
+    printf("  add rsp, 8\n");
+    printf(".L.end.1:\n");
+    printf("  push rax\n");
     printf("  push rax\n");
     return;
   }
