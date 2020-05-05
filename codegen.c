@@ -377,15 +377,32 @@ static Node *unary() {
 }
 
 /* primary_expr = NUM */
+/*              | "(" "{" (stmt)* "}" ")" */
 /*              | Ident ("()")? */
 /*              | Ident */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
 static Node *primary_expr(void) {
   if (consume("(")) {
-    node = add();
-    expect(')');
-    return node;
+    if (consume("{")) {
+      // read gnu statement.
+      Node head = {};
+      Node *cur = &head;
+
+      while (!consume("}")) {
+        cur->next = stmt();
+        cur = cur->next;
+      }
+
+      expect(')');
+      Node *node = new_node(ND_GNU_BLOCK);
+      node->block = head.next;
+      return node;
+    } else {
+      node = add();
+      expect(')');
+      return node;
+    }
   }
 
   char *type_s = look_type();
@@ -514,6 +531,10 @@ void code_gen(Node *node) {
     printf("  push rax\n");
     return;
   }
+  case ND_GNU_BLOCK:
+    for (Node *n = node->block; n; n = n->next)
+      code_gen(n);
+    return;
   case ND_BLOCK:
     for (Node *n = node->block; n; n = n->next)
       code_gen(n);

@@ -90,29 +90,30 @@ struct Var {
 
 // AST node
 typedef enum {
-  ND_NUM,    // Integer
-  ND_ADD,    //  +
-  ND_SUB,    //  -
-  ND_MUL,    //  *
-  ND_DIV,    //  /
-  ND_LPAREN, // (
-  ND_RPAREN, // )
-  ND_EQ,     // ==
-  ND_NEQ,    // !=
-  ND_LT,     // <
-  ND_LTE,    // <=
-  ND_STMT,   // ;
-  ND_ADDR,   // &
-  ND_REF,    // *
-  ND_RETURN, // Return
-  ND_IF,     // If
-  ND_WHILE,  // While
-  ND_ELS,    // If
-  ND_EOF,    // EOF
-  ND_VAR,    // Variable
-  ND_FNC,    // Function
-  ND_ASSIGN, // =
-  ND_BLOCK,  // {}
+  ND_NUM,       // Integer
+  ND_ADD,       //  +
+  ND_SUB,       //  -
+  ND_MUL,       //  *
+  ND_DIV,       //  /
+  ND_LPAREN,    // (
+  ND_RPAREN,    // )
+  ND_EQ,        // ==
+  ND_NEQ,       // !=
+  ND_LT,        // <
+  ND_LTE,       // <=
+  ND_STMT,      // ;
+  ND_ADDR,      // &
+  ND_REF,       // *
+  ND_RETURN,    // Return
+  ND_IF,        // If
+  ND_WHILE,     // While
+  ND_ELS,       // If
+  ND_EOF,       // EOF
+  ND_VAR,       // Variable
+  ND_FNC,       // Function
+  ND_ASSIGN,    // =
+  ND_GNU_BLOCK, // ({})
+  ND_BLOCK,     // { }
 } NodeKind;
 
 // Token type

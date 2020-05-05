@@ -106,4 +106,8 @@ assert 2 'int main() { int i = 10; char c = 1; char h = 2; return h; }'
 assert 4 'int main() { return returnFour(); } int returnFour() { return 4; }'
 assert 12 'int main() { return returnFour() * 3; } int returnFour() { return 4; }'
 
+assert 0 'int main() { return ({ 0; }); }'
+assert 3 'int main() { return ({ int i = 3; i; }); }'
+assert 2 'int main() { return ({ 0; 1; 2; }); }'
+
 echo OK

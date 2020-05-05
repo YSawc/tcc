@@ -12,9 +12,7 @@ static void emit_function(Function *function) {
   printf("  mov rbp, rsp\n");
 }
 
-static void emit_prologue_text(void) {
-  printf("  .text\n");
-}
+static void emit_prologue_text(void) { printf("  .text\n"); }
 
 static void emit_globals_data(Program *prog) {
   printf("  .data\n");
@@ -44,11 +42,11 @@ static void emit_data() {
   assign_var_offset(prog->func);
 
   for (Function *func = prog->func; func; func = func->next) {
-  int i = 0;
-  for (Var *v = func->lVars; v; v = v->next) {
-    i += v->type.type_size;
-    v->offset = i;
-  }
+    int i = 0;
+    for (Var *v = func->lVars; v; v = v->next) {
+      i += v->type.type_size;
+      v->offset = i;
+    }
 
     emit_function(func);
     emit_rsp(prog->func);
@@ -58,7 +56,6 @@ static void emit_data() {
 
     emit_out_function(func);
   }
-
 }
 
 static void gen_code() {
