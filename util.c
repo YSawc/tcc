@@ -52,7 +52,7 @@ char *strTypeOfVar(char *s, int l) {
 char *strtoalpha(char *s) {
   char *strArr = calloc(1, 24);
   for (int i = 0; s[i] != '\0'; i++) {
-    if (isalpha(s[i])) {
+    if (isalpha(s[i]) || isdigit(s[i])) {
       strArr[i] = s[i];
     } else {
       break;
