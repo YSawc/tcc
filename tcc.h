@@ -82,10 +82,10 @@ extern Type *type_char;
 typedef struct Var Var;
 struct Var {
   Var *next;
-  char *name; // Variable name
-  int offset; // Offset from RBP
-  Type type;  // type
-  bool is_local;  // true if local variable
+  char *name;    // Variable name
+  int offset;    // Offset from RBP
+  Type type;     // type
+  bool is_local; // true if local variable
 };
 
 // AST node
@@ -144,6 +144,7 @@ struct Node {
 
 typedef struct Function Function;
 struct Function {
+  Function *next;
   char *name;
   Node *node;
   Var *lVars;

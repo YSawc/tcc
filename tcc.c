@@ -2,16 +2,18 @@
 
 Node *node;
 
-static void emit_prologue() {
-  printf("  .intel_syntax noprefix\n");
-}
+static void emit_prologue() { printf("  .intel_syntax noprefix\n"); }
 
 static void emit_function(Function *function) {
-  printf("  .text\n");
-  printf("  .global main\n");
-  printf("%s:\n", function->name);
+  char *func_name = function->name;
+  printf("  .global %s\n", func_name);
+  printf("%s:\n", func_name);
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
+}
+
+static void emit_prologue_text(void) {
+  printf("  .text\n");
 }
 
 static void emit_globals_data(Program *prog) {
@@ -35,23 +37,28 @@ static void emit_data() {
 
   if (prog->gVars)
     emit_globals_data(prog);
-  emit_function(prog->func);
 
+  emit_prologue_text();
+
+  // Variable created this phase, so assign each variable with offset.
+  assign_var_offset(prog->func);
+
+  for (Function *func = prog->func; func; func = func->next) {
   int i = 0;
-  for (Var *v = prog->func->lVars; v; v = v->next) {
+  for (Var *v = func->lVars; v; v = v->next) {
     i += v->type.type_size;
     v->offset = i;
   }
 
-  // Variable created this phase, so assign each variable with offset.
-  assign_var_offset(prog->func);
-  emit_rsp(prog->func);
+    emit_function(func);
+    emit_rsp(prog->func);
+    for (Node *node = func->node; node; node = node->next) {
+      code_gen(node);
+    }
 
-  for (Node *node = prog->func->node; node; node = node->next) {
-    code_gen(node);
+    emit_out_function(func);
   }
 
-  emit_out_function(prog->func);
 }
 
 static void gen_code() {

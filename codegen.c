@@ -140,8 +140,6 @@ static bool is_function(void) {
 static char *look_type(void) {
   // list of reserved multiple letter.string
   static char *types[] = {"int", "char"};
-  bool b = false;
-  Token *tok = token;
   char *s = NULL;
 
   // Detector in list of reserved multiple letter string
@@ -165,18 +163,12 @@ static void global_var() {
   gVars = var;
 }
 
-// program = stmt*
-Program *gen_program(void) {
+static Function *function() {
   lVars = NULL;
-  gVars = NULL;
 
-  Node head = {};
-  Node *cur = &head;
-
-  // detect global functoin.
-  while (!is_function()) {
-    global_var();
-  }
+  Function *func = calloc(1, sizeof(Function));
+  Node head_node = {};
+  Node *cur_node = &head_node;
 
   // in this scope, be in internal of function.
   expect_str("int");
@@ -184,18 +176,36 @@ Program *gen_program(void) {
   expect('(');
   expect(')');
   expect('{');
-
   while (!consume("}")) {
-    cur->next = stmt();
-    cur = cur->next;
+    cur_node->next = stmt();
+    cur_node = cur_node->next;
+  }
+
+  func->name = func_name;
+  func->node = head_node.next;
+  func->lVars = lVars;
+  return func;
+}
+
+// program = stmt*
+Program *gen_program(void) {
+  gVars = NULL;
+
+  Function head_func = {};
+  Function *func_cur = &head_func;
+
+  // detect global functoin.
+  while (!is_function()) {
+    global_var();
+  }
+
+  while (!at_eof()) {
+    func_cur->next = function();
+    func_cur = func_cur->next;
   }
 
   Program *prog = calloc(1, sizeof(Program));
-  Function *func = calloc(1, sizeof(Function));
-  func->name = func_name;
-  func->node = head.next;
-  func->lVars = lVars;
-  prog->func = func;
+  prog->func = head_func.next;
   prog->gVars = gVars;
   return prog;
 }
