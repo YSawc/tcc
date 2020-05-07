@@ -18,7 +18,7 @@ static void emit_globals_data(Program *prog) {
   printf("  .data\n");
   for (Var *var = prog->gVars; var; var = var->next) {
     printf("%s:\n", var->name);
-    printf("  .zero %d\n", var->type.type_size);
+    printf("  .zero %d\n", var->type->size);
   }
 }
 
@@ -44,7 +44,7 @@ static void emit_data() {
   for (Function *func = prog->func; func; func = func->next) {
     int i = 0;
     for (Var *v = func->lVars; v; v = v->next) {
-      i += v->type.type_size;
+      i += v->type->size;
       v->offset = i;
     }
 

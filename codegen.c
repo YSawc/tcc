@@ -37,9 +37,9 @@ static Var *new_lvar(char *name, char *type_s) {
   var->next = lVars;
 
   if (startswith(type_s, "int")) {
-    var->type = *type_int;
+    var->type = typ_int;
   } else if (startswith(type_s, "char")) {
-    var->type = *type_char;
+    var->type = typ_char;
   } else {
     error_at(token->str, "expected type, but not detected.");
   }
@@ -92,6 +92,7 @@ static Node *new_num(long val) {
 static Node *new_var_node(Var *var) {
   Node *node = new_node(ND_VAR);
   node->var = var;
+  node->typ = var->type;
   node->str = var->name;
   return node;
 }
@@ -158,7 +159,7 @@ static void global_var() {
   expect(';');
   Var *var = calloc(1, sizeof(Var));
   var->next = gVars;
-  var->type = *type_int;
+  var->type = typ_int;
   var->name = name;
   gVars = var;
 }
@@ -213,7 +214,7 @@ Program *gen_program(void) {
 void assign_var_offset(Function *function) {
   int i = 0;
   for (Var *v = function->lVars; v; v = v->next) {
-    i += v->type.type_size;
+    i += v->type->size;
     v->offset = i;
   }
 }
@@ -225,7 +226,7 @@ void emit_rsp(Function *function) {
     int i = 0;
     // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
     for (Var *v = function->lVars; v; v = v->next)
-      i += v->type.type_size;
+      i += v->type->size;
     i = ((i + 8 - 1) / 8) * 8;
     printf("  sub rsp, %d\n", i);
   } else {
@@ -328,14 +329,42 @@ static Node *relational(void) {
   }
 };
 
+static Node *new_add(Node *lhs, Node *rhs) {
+  typ_rev(lhs);
+  typ_rev(rhs);
+
+  if (is_integer(lhs->typ) && is_integer(rhs->typ))
+    return new_binary(ND_ADD, lhs, rhs);
+  if (lhs->typ->base && is_integer(rhs->typ))
+    return new_binary(ND_PTR_ADD, lhs, rhs);
+  if (is_integer(lhs->typ) && rhs->typ->base)
+    return new_binary(ND_PTR_ADD, rhs, lhs);
+  error_at(token->str, "invalid operands");
+  return NULL;
+}
+
+static Node *new_sub(Node *lhs, Node *rhs) {
+  typ_rev(lhs);
+  typ_rev(rhs);
+
+  if (is_integer(lhs->typ) && is_integer(rhs->typ))
+    return new_binary(ND_SUB, lhs, rhs);
+  if (lhs->typ->base && is_integer(rhs->typ))
+    return new_binary(ND_PTR_SUB, lhs, rhs);
+  if (is_integer(lhs->typ) && rhs->typ->base)
+    return new_binary(ND_PTR_SUB, rhs, lhs);
+  error_at(token->str, "invalid operands");
+  return NULL;
+}
+
 /* add = mul ( "*" mul | "/" mul )* */
 static Node *add() {
   Node *node = mul();
 
   if (consume("+")) {
-    node = new_binary(ND_ADD, node, primary_expr());
+    node = new_add(node, primary_expr());
   } else if (consume("-")) {
-    node = new_binary(ND_SUB, node, primary_expr());
+    node = new_sub(node, primary_expr());
   }
 
   return node;
@@ -364,12 +393,14 @@ static Node *unary() {
   } else if (consume("*")) {
     return new_uarray(ND_REF, unary());
   } else if (consume("&")) {
-    Token *tok = consume_ident();
-    if (!tok)
-      error_at(tok->str, "ident not found.");
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_ADDR;
-    node->var = find_lvar(tok);
+    return new_uarray(ND_ADDR, unary());
+    /* Token *tok = consume_ident(); */
+    /* if (!tok) */
+    /* error_at(tok->str, "ident not found."); */
+    /* Node *node = calloc(1, sizeof(Node)); */
+    /* node->kind = ND_ADDR; */
+    /* node->var = find_lvar(tok); */
+    /* node->rhs->typ = node->var->type; */
     return node;
   } else {
     return primary_expr();
@@ -443,7 +474,7 @@ static Node *primary_expr(void) {
     Var *var = find_lvar(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
-    node = new_num(var->type.type_size);
+    node = new_num(var->type->size);
     expect(')');
     return node;
   }
@@ -468,7 +499,7 @@ void code_gen(Node *node) {
     store_val();
     return;
   case ND_ADDR:
-    gen_var_addr(node);
+    gen_var_addr(node->rhs);
     return;
   case ND_REF:
     code_gen(node->rhs);
@@ -557,7 +588,15 @@ void code_gen(Node *node) {
   case ND_ADD:
     printf("  add rax, rdi\n");
     break;
+  case ND_PTR_ADD:
+    printf("  imul rdi, 8\n");
+    printf("  add rax, rdi\n");
+    break;
   case ND_SUB:
+    printf("  sub rax, rdi\n");
+    break;
+  case ND_PTR_SUB:
+    printf("  imul rdi, 8\n");
     printf("  sub rax, rdi\n");
     break;
   case ND_MUL:

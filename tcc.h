@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct Type Type; // from type.c
+typedef struct Node Node;
 
 //
 // util.c
@@ -60,19 +60,24 @@ extern Token *token;
 //
 
 typedef enum {
-  TYPE_CHAR,
-  TYPE_INT,
-} TypeKind;
+  TYP_CHAR,
+  TYP_INT,
+  TYP_PTR,
+} Kind;
 
 // typedef struct Var Var; // from codegen.c
 typedef struct Type Type;
 struct Type {
-  TypeKind typekind;
-  int type_size; // value of sizeof
+  Kind kind;
+  int size;   // value of sizeof
+  Type *base; // base used when
 };
 
-extern Type *type_int;
-extern Type *type_char;
+extern Type *typ_int;
+extern Type *typ_char;
+
+bool is_integer(Type *typ);
+void typ_rev(Node *node);
 
 //
 // codegen.c
@@ -84,7 +89,7 @@ struct Var {
   Var *next;
   char *name;    // Variable name
   int offset;    // Offset from RBP
-  Type type;     // type
+  Type *type;    // type
   bool is_local; // true if local variable
 };
 
@@ -92,16 +97,15 @@ struct Var {
 typedef enum {
   ND_NUM,       // Integer
   ND_ADD,       //  +
+  ND_PTR_ADD,   //  +
   ND_SUB,       //  -
+  ND_PTR_SUB,   //  -
   ND_MUL,       //  *
   ND_DIV,       //  /
-  ND_LPAREN,    // (
-  ND_RPAREN,    // )
   ND_EQ,        // ==
   ND_NEQ,       // !=
   ND_LT,        // <
   ND_LTE,       // <=
-  ND_STMT,      // ;
   ND_ADDR,      // &
   ND_REF,       // *
   ND_RETURN,    // Return
@@ -141,6 +145,8 @@ struct Node {
 
   long val;  // If kind is TK_NUM, its value
   char *str; // Token string
+
+  Type *typ; // type of node.
 };
 
 typedef struct Function Function;

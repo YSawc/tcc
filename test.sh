@@ -90,8 +90,9 @@ assert 8 'int main() { int i = 6; return sizeof(i); }'
 
 assert 3 'int main() { int x=3; return *&x; }'
 assert 3 'int main() { int x=3; int y = &x; int z = &y; return **z; }'
-assert 3 'int main() { int x=3; int y=5; return *(&y-8); }'
-assert 5 'int main() { int x=3; int y=5; return *(&x+8); }'
+assert 3 'int main() { int x=3; int y=5; return *(&y-1); }'
+assert 3 'int main() { int x=3; int y=5; return *(&y-1); }'
+assert 5 'int main() { int x=3; int y=5; return *(&x+1); }'
 
 assert 0 'int x; int main() { return 0; }'
 assert 0 'int x; int main() { return x; }'
