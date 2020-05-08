@@ -50,15 +50,21 @@ static Var *new_lvar(char *name, char *type_s) {
   return var;
 }
 
-static Var *find_lvar(Token *tok) {
+// find variable scope of a whole
+static Var *find_var(Token *tok) {
   for (Var *v = lVars; v; v = v->next)
+    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
+      return v;
+
+  for (Var *v = gVars; v; v = v->next)
     if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
       return v;
   return NULL;
 }
 
-static Var *find_gvar(Token *tok) {
-  for (Var *v = gVars; v; v = v->next)
+// find variable scope of local
+static Var *find_lvar(Token *tok) {
+  for (Var *v = lVars; v; v = v->next)
     if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
       return v;
   return NULL;
@@ -368,7 +374,6 @@ static Node *add() {
   }
 
   return node;
-  /* } */
 }
 
 /* mul = unary ( "*" unary | "/" unary )* */
@@ -394,13 +399,6 @@ static Node *unary() {
     return new_uarray(ND_REF, unary());
   } else if (consume("&")) {
     return new_uarray(ND_ADDR, unary());
-    /* Token *tok = consume_ident(); */
-    /* if (!tok) */
-    /* error_at(tok->str, "ident not found."); */
-    /* Node *node = calloc(1, sizeof(Node)); */
-    /* node->kind = ND_ADDR; */
-    /* node->var = find_lvar(tok); */
-    /* node->rhs->typ = node->var->type; */
     return node;
   } else {
     return primary_expr();
@@ -453,15 +451,10 @@ static Node *primary_expr(void) {
       return node;
     }
 
-    // find local variable.
-    Var *lVar = find_lvar(tok);
-    if (lVar)
-      return new_var_node(lVar);
-
-    // find gloval variable.
-    Var *gVar = find_gvar(tok);
-    if (gVar)
-      return new_var_node(gVar);
+    // find variable.
+    Var *var = find_var(tok);
+    if (var)
+      return new_var_node(var);
     error_at(token->str, "can't handle with undefined variable.");
   }
 
@@ -471,7 +464,7 @@ static Node *primary_expr(void) {
     Token *tok = consume_ident();
     if (!tok)
       error_at(tok->str, "expected ident.");
-    Var *var = find_lvar(tok);
+    Var *var = find_var(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
     node = new_num(var->type->size);
