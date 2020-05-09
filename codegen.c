@@ -104,6 +104,7 @@ static Node *expect_dec(Type *typ) {
   Var *var = find_lvar(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
+  var = new_lvar(tok->str, typ);
   return new_var_node(var);
 }
 
