@@ -34,13 +34,6 @@ long expect_number(void) {
   return val;
 }
 
-char *singleCharToString(char c) {
-  char *s = malloc(2);
-  s[0] = c;
-  s[1] = '\0';
-  return s;
-}
-
 char *strTypeOfVar(char *s, int l) {
   char *tmp = malloc(l);
   for (int i = 0; i < l; i++) {
@@ -50,7 +43,7 @@ char *strTypeOfVar(char *s, int l) {
 }
 
 char *strtoalpha(char *s) {
-  char *strArr = calloc(1, 24);
+  char *strArr = calloc(1, strlen(s));
   for (int i = 0; s[i] != '\0'; i++) {
     if (isalpha(s[i]) || isdigit(s[i])) {
       strArr[i] = s[i];

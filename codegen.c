@@ -36,9 +36,9 @@ static Var *new_lvar(char *name, char *type_s) {
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
 
-  if (startswith(type_s, "int")) {
+  if (strcmp(type_s, "int")  == 0) {
     var->type = typ_int;
-  } else if (startswith(type_s, "char")) {
+  } else if (strcmp(type_s, "char") == 0) {
     var->type = typ_char;
   } else {
     error_at(token->str, "expected type, but not detected.");
@@ -129,7 +129,6 @@ static Node *func_args() {
   Node *cur = head;
   while (consume(",")) {
     cur->next = add();
-    /* cur->next = new_num(expect_number()); */
     cur = cur->next;
   }
   expect(')');
