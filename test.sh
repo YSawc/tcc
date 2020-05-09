@@ -112,4 +112,6 @@ assert 0 'int main() { return ({ 0; }); }'
 assert 3 'int main() { return ({ int i = 3; i; }); }'
 assert 2 'int main() { return ({ 0; 1; 2; }); }'
 
+assert 0 'int main() { int x[2]; return 0; }'
+
 echo OK

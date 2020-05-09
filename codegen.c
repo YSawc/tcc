@@ -45,6 +45,28 @@ static Var *new_lvar(char *name, Type *typ) {
   lVars = var;
   return var;
 }
+static Var *new_arr_var(char *name, int l) {
+  Var *ret_v;
+  Var *var = calloc(1, sizeof(Var));
+  var->next = lVars;
+  var->typ = typ_int_arr;
+  var->name = name;
+  var->is_local = true;
+  lVars = var;
+
+  for (int l_i = 0; l_i < l; l_i++) {
+    Var *tmp = calloc(1, sizeof(Var));
+    tmp->next = lVars;
+    tmp->typ = typ_int_arr;
+    tmp->name = name;
+    tmp->is_local = true;
+    lVars = tmp;
+
+    if (l_i == l - 1)
+      ret_v = tmp;
+  }
+  return ret_v;
+}
 
 // find variable scope of a whole
 static Var *find_var(Token *tok) {
@@ -104,6 +126,13 @@ static Node *expect_dec(Type *typ) {
   Var *var = find_lvar(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
+
+  if (consume("[")) {
+    int l = expect_number();
+    expect(']');
+    var = new_arr_var(tok->str, l);
+    return new_var_node(var);
+  }
   var = new_lvar(tok->str, typ);
   return new_var_node(var);
 }
@@ -410,6 +439,7 @@ static Node *unary() {
 /*              | "(" "{" (stmt)* "}" ")" */
 /*              | Ident ("()")? */
 /*              | Ident */
+/*              | Ident "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
 static Node *primary_expr(void) {
