@@ -88,7 +88,7 @@ struct Var {
   Var *next;
   char *name;    // Variable name
   int offset;    // Offset from RBP
-  Type *type;    // type
+  Type *typ;    // type
   bool is_local; // true if local variable
 };
 

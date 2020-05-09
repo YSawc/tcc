@@ -32,17 +32,13 @@ static void store_val(void) {
   printf("  push rdi\n");
 }
 
-static Var *new_lvar(char *name, char *type_s) {
+static Var *new_lvar(char *name, Type *typ) {
+  if (!typ)
+    error_at(token->str, "expected type, but not detected.");
+
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-
-  if (strcmp(type_s, "int")  == 0) {
-    var->type = typ_int;
-  } else if (strcmp(type_s, "char") == 0) {
-    var->type = typ_char;
-  } else {
-    error_at(token->str, "expected type, but not detected.");
-  }
+  var->typ = typ;
 
   var->name = name;
   var->is_local = true;
@@ -98,17 +94,16 @@ static Node *new_num(long val) {
 static Node *new_var_node(Var *var) {
   Node *node = new_node(ND_VAR);
   node->var = var;
-  node->typ = var->type;
+  node->typ = var->typ;
   node->str = var->name;
   return node;
 }
 
-static Node *expect_dec(char *type_s) {
+static Node *expect_dec(Type *typ) {
   Token *tok = consume_ident();
   Var *var = find_lvar(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
-  var = new_lvar(tok->str, type_s);
   return new_var_node(var);
 }
 
@@ -143,19 +138,25 @@ static bool is_function(void) {
   return isfunc;
 }
 
-static char *look_type(void) {
+static Type *look_type(void) {
+  if (strcmp(token->str, "int") == 0)
+    return typ_int;
+  if (strcmp(token->str, "char") == 0)
+    return typ_char;
+  return NULL;
+}
+
+static void consume_typ(void) {
   // list of reserved multiple letter.string
   static char *types[] = {"int", "char"};
-  char *s = NULL;
 
   // Detector in list of reserved multiple letter string
   for (int i = 0; i < sizeof(types) / sizeof(*types); i++) {
     if (startswith(token->str, types[i])) {
-      s = types[i];
+      token = token->next;
       break;
     }
   }
-  return s;
 }
 
 static void global_var() {
@@ -164,7 +165,7 @@ static void global_var() {
   expect(';');
   Var *var = calloc(1, sizeof(Var));
   var->next = gVars;
-  var->type = typ_int;
+  var->typ = typ_int;
   var->name = name;
   gVars = var;
 }
@@ -219,7 +220,7 @@ Program *gen_program(void) {
 void assign_var_offset(Function *function) {
   int i = 0;
   for (Var *v = function->lVars; v; v = v->next) {
-    i += v->type->size;
+    i += v->typ->size;
     v->offset = i;
   }
 }
@@ -231,7 +232,7 @@ void emit_rsp(Function *function) {
     int i = 0;
     // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
     for (Var *v = function->lVars; v; v = v->next)
-      i += v->type->size;
+      i += v->typ->size;
     i = ((i + 8 - 1) / 8) * 8;
     printf("  sub rsp, %d\n", i);
   } else {
@@ -433,10 +434,10 @@ static Node *primary_expr(void) {
     }
   }
 
-  char *type_s = look_type();
-  if (type_s) {
-    consume(type_s);
-    return expect_dec(type_s);
+  Type *typ = look_type();
+  if (typ) {
+    consume_typ();
+    return expect_dec(typ);
   }
 
   Token *tok = consume_ident();
@@ -466,7 +467,7 @@ static Node *primary_expr(void) {
     Var *var = find_var(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
-    node = new_num(var->type->size);
+    node = new_num(var->typ->size);
     expect(')');
     return node;
   }
