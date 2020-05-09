@@ -119,6 +119,7 @@ typedef enum {
   ND_ASSIGN,    // =
   ND_GNU_BLOCK, // ({})
   ND_BLOCK,     // { }
+  ND_NULL,     // null
 } NodeKind;
 
 // Token type

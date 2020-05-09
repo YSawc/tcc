@@ -1,7 +1,7 @@
 #include "tcc.h"
 
-Var *lVars;
-Var *gVars;
+static Var *lVars;
+static Var *gVars;
 
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
@@ -134,6 +134,8 @@ static Node *expect_dec(Type *typ) {
     return new_var_node(var);
   }
   var = new_lvar(tok->str, typ);
+  if (startswith(token->str, ";")) // In this case, it only declared but not assigned.
+    return new_node(ND_NULL);
   return new_var_node(var);
 }
 
@@ -510,6 +512,8 @@ static int conditional_c = 0;
 
 void code_gen(Node *node) {
   switch (node->kind) {
+  case ND_NULL:
+    return;
   case ND_NUM:
     printf("  push %ld\n", node->val);
     return;
