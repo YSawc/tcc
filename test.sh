@@ -115,5 +115,7 @@ assert 2 'int main() { return ({ 0; 1; 2; }); }'
 assert 0 'int main() { int x[2]; return 0; }'
 
 assert 1 'int main() { int x[2]; *x=1; return *x; }'
+assert 2 'int main() { int x[2]; *x=1; *(x+1)=2; *(x+2)=3; return *(x+1); }'
+assert 3 'int main() { int x[2]; *x=1; *(x+1)=2; *(x+2)=3; return *(x+2); }'
 
 echo OK

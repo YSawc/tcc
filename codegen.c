@@ -120,6 +120,8 @@ static Node *new_var_node(Var *var) {
   node->var = var;
   node->typ = var->typ;
   node->str = var->name;
+  if (var->typ->base)
+    node->typ->base = var->typ->base;
   return node;
 }
 
@@ -133,6 +135,7 @@ static Node *expect_dec(Type *typ) {
     int l = expect_number();
     expect(']');
     var = new_arr_var(tok->str, l);
+    var->typ->base = typ;
     Node *node = new_node(ND_NULL);
     node->var = var;
     return node;
