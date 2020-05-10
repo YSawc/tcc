@@ -55,10 +55,7 @@ void typ_rev(Node *node) {
     node->typ = pointer_to(node->rhs->typ);
     return;
   case ND_REF:
-    if (node->rhs->typ->kind == TYP_PTR)
-      node->typ = node->rhs->typ->base;
-    else
-      node->typ = typ_int;
+    node->typ = node->rhs->typ;
     return;
   default:
     return;

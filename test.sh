@@ -114,4 +114,6 @@ assert 2 'int main() { return ({ 0; 1; 2; }); }'
 
 assert 0 'int main() { int x[2]; return 0; }'
 
+assert 1 'int main() { int x[2]; *x=1; return *x; }'
+
 echo OK

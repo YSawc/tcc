@@ -90,7 +90,7 @@ struct Var {
   Var *next;
   char *name;    // Variable name
   int offset;    // Offset from RBP
-  Type *typ;    // type
+  Type *typ;     // type
   bool is_local; // true if local variable
 };
 
@@ -119,7 +119,7 @@ typedef enum {
   ND_ASSIGN,    // =
   ND_GNU_BLOCK, // ({})
   ND_BLOCK,     // { }
-  ND_NULL,     // null
+  ND_NULL,      // null
 } NodeKind;
 
 // Token type

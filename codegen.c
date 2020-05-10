@@ -10,7 +10,9 @@ static char *func_name;
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
   Var *var = node->var;
-  if (var->is_local) {
+  if (node->kind == ND_REF) {
+    code_gen(node->rhs);
+  } else if (var->is_local) {
     printf("  lea rax, [rbp-%d]\n", var->offset);
     printf("  push rax\n");
   } else {
@@ -58,7 +60,7 @@ static Var *new_arr_var(char *name, int l) {
     Var *tmp = calloc(1, sizeof(Var));
     tmp->next = lVars;
     tmp->typ = typ_int_arr;
-    tmp->name = name;
+    tmp->name = "";
     tmp->is_local = true;
     lVars = tmp;
 
@@ -131,14 +133,18 @@ static Node *expect_dec(Type *typ) {
     int l = expect_number();
     expect(']');
     var = new_arr_var(tok->str, l);
-    return new_var_node(var);
+    Node *node = new_node(ND_NULL);
+    node->var = var;
+    return node;
   }
   var = new_lvar(tok->str, typ);
-  if (startswith(token->str, ";")) // In this case, it only declared but not assigned.
+  // In this case, it only declared but not assigned.
+  if (startswith(token->str, ";"))
     return new_node(ND_NULL);
   return new_var_node(var);
 }
 
+static Node *phase_typ_rev(void);
 static Node *stmt(void);
 static Node *assign(void);
 static Node *equality(void);
@@ -216,7 +222,7 @@ static Function *function() {
   expect(')');
   expect('{');
   while (!consume("}")) {
-    cur_node->next = stmt();
+    cur_node->next = phase_typ_rev();
     cur_node = cur_node->next;
   }
 
@@ -270,6 +276,13 @@ void emit_rsp(Function *function) {
   } else {
     printf("  sub rsp, 0\n");
   };
+}
+
+// In this phase, reveal type of each returned node.
+static Node *phase_typ_rev() {
+  Node *node = stmt();
+  typ_rev(node);
+  return node;
 }
 
 /* stmt = "return" expr ";" */
@@ -519,12 +532,15 @@ void code_gen(Node *node) {
     return;
   case ND_VAR:
     gen_var_addr(node);
-    load_val();
+    if (node->typ->kind != TYP_INT_ARR)
+      load_val();
     return;
   case ND_ASSIGN:
     gen_var_addr(node->lhs);
     code_gen(node->rhs);
     store_val();
+    if (node->lhs->typ->kind == TYP_INT_ARR)
+      printf("  add rsp, 8\n");
     return;
   case ND_ADDR:
     gen_var_addr(node->rhs);
