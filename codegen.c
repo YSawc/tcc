@@ -11,7 +11,7 @@ static char *func_name;
 static void gen_var_addr(Node *node) {
   Var *var = node->var;
   if (node->kind == ND_REF) {
-    code_gen(node->rhs);
+    code_gen(node->lhs);
   } else if (var->is_local) {
     printf("  lea rax, [rbp-%d]\n", var->offset);
     printf("  push rax\n");
@@ -115,9 +115,9 @@ static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
-static Node *new_uarray(NodeKind kind, Node *rhs) {
+static Node *new_uarray(NodeKind kind, Node *lhs) {
   Node *node = new_node(kind);
-  node->rhs = rhs;
+  node->lhs = lhs;
   return node;
 }
 
@@ -559,11 +559,11 @@ void code_gen(Node *node) {
       printf("  add rsp, 8\n");
     return;
   case ND_ADDR:
-    gen_var_addr(node->rhs);
+    gen_var_addr(node->lhs);
     return;
   case ND_REF:
-    code_gen(node->rhs);
     if (node->typ->kind == TYP_CHAR_ARR)
+    code_gen(node->lhs);
       load_8();
     else
       load_64();
@@ -634,7 +634,7 @@ void code_gen(Node *node) {
       code_gen(n);
     return;
   case ND_RETURN:
-    code_gen(node->rhs);
+    code_gen(node->lhs);
     printf("  pop rax\n");
     printf("  jmp .L.return.%s\n", func_name);
     return;

@@ -58,10 +58,10 @@ void typ_rev(Node *node) {
     node->typ = node->lhs->typ;
     return;
   case ND_ADDR:
-    node->typ = pointer_to(node->rhs->typ);
+    node->typ = pointer_to(node->lhs->typ);
     return;
   case ND_REF:
-    node->typ = node->rhs->typ;
+    node->typ = node->lhs->typ;
     return;
   default:
     return;
