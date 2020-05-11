@@ -2,6 +2,7 @@
 
 Type *typ_char = &(Type){TYP_CHAR, 1};
 Type *typ_int = &(Type){TYP_INT, 8};
+Type *typ_char_arr = &(Type){TYP_CHAR_ARR, 1};
 Type *typ_int_arr = &(Type){TYP_INT_ARR, 8};
 
 bool is_integer(Type *typ) { return typ->kind == TYP_INT; }

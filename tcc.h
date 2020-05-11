@@ -61,6 +61,7 @@ extern Token *token;
 typedef enum {
   TYP_CHAR,
   TYP_INT,
+  TYP_CHAR_ARR,
   TYP_INT_ARR,
   TYP_PTR,
 } Kind;
@@ -75,6 +76,7 @@ struct Type {
 
 extern Type *typ_char;
 extern Type *typ_int;
+extern Type *typ_char_arr;
 extern Type *typ_int_arr;
 
 bool is_integer(Type *typ);

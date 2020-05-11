@@ -21,16 +21,25 @@ static void gen_var_addr(Node *node) {
   return;
 }
 
-static void load_val(void) {
+static void load_64(void) {
   printf("  pop rax\n");
   printf("  mov rax, [rax]\n");
   printf("  push rax\n");
 }
 
-static void store_val(void) {
+static void load_8(void) {
+  printf("  pop rax\n");
+  printf("  movsx rax, byte ptr [rax]\n");
+  printf("  push rax\n");
+}
+
+static void store_val(Type *typ) {
   printf("  pop rdi\n");
   printf("  pop rax\n");
-  printf("  mov [rax], rdi\n");
+  if (typ->kind == TYP_CHAR_ARR)
+    printf("  mov [rax], dil\n");
+  else
+    printf("  mov [rax], rdi\n");
   printf("  push rdi\n");
 }
 
@@ -47,11 +56,14 @@ static Var *new_lvar(char *name, Type *typ) {
   lVars = var;
   return var;
 }
-static Var *new_arr_var(char *name, int l) {
+static Var *new_arr_var(char *name, int l, Type *typ) {
   Var *ret_v;
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-  var->typ = typ_int_arr;
+  if (typ == typ_char)
+    var->typ = typ_char_arr;
+  else if (typ == typ_int)
+    var->typ = typ_int_arr;
   var->name = name;
   var->is_local = true;
   lVars = var;
@@ -59,7 +71,7 @@ static Var *new_arr_var(char *name, int l) {
   for (int l_i = 0; l_i < l; l_i++) {
     Var *tmp = calloc(1, sizeof(Var));
     tmp->next = lVars;
-    tmp->typ = typ_int_arr;
+    tmp->typ = var->typ;
     tmp->name = "";
     tmp->is_local = true;
     lVars = tmp;
@@ -134,7 +146,7 @@ static Node *expect_dec(Type *typ) {
   if (consume("[")) {
     int l = expect_number();
     expect(']');
-    var = new_arr_var(tok->str, l);
+    var = new_arr_var(tok->str, l, typ);
     var->typ->base = typ;
     Node *node = new_node(ND_NULL);
     node->var = var;
@@ -535,14 +547,15 @@ void code_gen(Node *node) {
     return;
   case ND_VAR:
     gen_var_addr(node);
-    if (node->typ->kind != TYP_INT_ARR)
-      load_val();
+    if (node->typ->kind != TYP_INT_ARR && node->typ->kind != TYP_CHAR_ARR)
+      load_64();
     return;
   case ND_ASSIGN:
     gen_var_addr(node->lhs);
     code_gen(node->rhs);
-    store_val();
-    if (node->lhs->typ->kind == TYP_INT_ARR)
+    store_val(node->lhs->typ);
+    if (node->lhs->typ->kind == TYP_INT_ARR ||
+        node->lhs->typ->kind == TYP_CHAR_ARR)
       printf("  add rsp, 8\n");
     return;
   case ND_ADDR:
@@ -550,7 +563,10 @@ void code_gen(Node *node) {
     return;
   case ND_REF:
     code_gen(node->rhs);
-    load_val();
+    if (node->typ->kind == TYP_CHAR_ARR)
+      load_8();
+    else
+      load_64();
     return;
   case ND_IF:
     conditional_c++;
@@ -636,14 +652,20 @@ void code_gen(Node *node) {
     printf("  add rax, rdi\n");
     break;
   case ND_PTR_ADD:
-    printf("  imul rdi, 8\n");
+    if (node->lhs->typ->kind == TYP_CHAR_ARR)
+      printf("  imul rdi, 1\n");
+    else
+      printf("  imul rdi, 8\n");
     printf("  add rax, rdi\n");
     break;
   case ND_SUB:
     printf("  sub rax, rdi\n");
     break;
   case ND_PTR_SUB:
-    printf("  imul rdi, 8\n");
+    if (node->lhs->typ->kind == TYP_CHAR_ARR)
+      printf("  imul rdi, 1\n");
+    else
+      printf("  imul rdi, 8\n");
     printf("  sub rax, rdi\n");
     break;
   case ND_MUL:
