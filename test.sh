@@ -122,4 +122,7 @@ assert 1 'int main() { char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; return *ca; }'
 assert 2 'int main() { char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; return *(ca+1); }'
 assert 3 'int main() { char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; return *(ca+2); }'
 
+assert 2 'int main() { int x[2]; *(1+x)=2; return *(x+1); }'
+assert 1 'int main() { char ca[2]; *(ca+1)=1; return *(1+ca); }'
+
 echo OK

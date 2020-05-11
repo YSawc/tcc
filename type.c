@@ -14,6 +14,11 @@ Type *pointer_to(Type *base) {
   return typ;
 }
 
+// Boolean formed intermediate within LR or.
+bool lr_if_or(Node *node, Kind k) {
+  return node->lhs->typ->kind == k || k == node->rhs->typ->kind;
+}
+
 void typ_rev(Node *node) {
   if (!node || node->typ)
     return;

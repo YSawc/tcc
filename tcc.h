@@ -81,6 +81,7 @@ extern Type *typ_int_arr;
 
 bool is_integer(Type *typ);
 void typ_rev(Node *node);
+bool lr_if_or(Node *node, Kind k);
 
 //
 // codegen.c

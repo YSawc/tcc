@@ -652,7 +652,7 @@ void code_gen(Node *node) {
     printf("  add rax, rdi\n");
     break;
   case ND_PTR_ADD:
-    if (node->lhs->typ->kind == TYP_CHAR_ARR)
+    if (lr_if_or(node, TYP_CHAR_ARR))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");
@@ -662,7 +662,7 @@ void code_gen(Node *node) {
     printf("  sub rax, rdi\n");
     break;
   case ND_PTR_SUB:
-    if (node->lhs->typ->kind == TYP_CHAR_ARR)
+    if (lr_if_or(node, TYP_INT_ARR))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");
