@@ -21,15 +21,15 @@ static void gen_var_addr(Node *node) {
   return;
 }
 
-static void load_64(void) {
-  printf("  pop rax\n");
-  printf("  mov rax, [rax]\n");
-  printf("  push rax\n");
-}
-
 static void load_8(void) {
   printf("  pop rax\n");
   printf("  movsx rax, byte ptr [rax]\n");
+  printf("  push rax\n");
+}
+
+static void load_64(void) {
+  printf("  pop rax\n");
+  printf("  mov rax, [rax]\n");
   printf("  push rax\n");
 }
 
@@ -128,10 +128,19 @@ static Node *new_num(long val) {
 }
 
 static Node *new_var_node(Var *var) {
+  // TODO: delete this
+  if (consume("[")) {
+    int n = expect_number();
+    n = n;
+    expect(']');
+    return NULL;
+  }
+
   Node *node = new_node(ND_VAR);
   node->var = var;
   node->typ = var->typ;
   node->str = var->name;
+
   if (var->typ->base)
     node->typ->base = var->typ->base;
   return node;
@@ -168,6 +177,14 @@ static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
+
+static Node *new_arr_ref_node(Var *var) {
+  Node *node = new_uarray(ND_ARR_REF, add());
+  expect(']');
+  node->var = var;
+  node->typ = var->typ;
+  return node;
+}
 
 static Node *func_args() {
   if (consume(")"))
@@ -514,8 +531,11 @@ static Node *primary_expr(void) {
 
     // find variable.
     Var *var = find_var(tok);
-    if (var)
+    if (var) {
+      if (consume("["))
+        return new_arr_ref_node(var);
       return new_var_node(var);
+    }
     error_at(token->str, "can't handle with undefined variable.");
   }
 
@@ -562,8 +582,8 @@ void code_gen(Node *node) {
     gen_var_addr(node->lhs);
     return;
   case ND_REF:
-    if (node->typ->kind == TYP_CHAR_ARR)
     code_gen(node->lhs);
+    if (node->typ->size == 1)
       load_8();
     else
       load_64();
@@ -625,6 +645,18 @@ void code_gen(Node *node) {
     printf("  push rax\n");
     return;
   }
+  case ND_ARR_REF:
+    gen_var_addr(node);
+    code_gen(node->lhs);
+
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    printf("  imul rdi, 8\n");
+    printf("  add rax, rdi\n");
+    printf("  push rax\n");
+    load_64();
+    printf("  add rsp, 8\n");
+    return;
   case ND_GNU_BLOCK:
     for (Node *n = node->block; n; n = n->next)
       code_gen(n);
