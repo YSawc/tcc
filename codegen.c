@@ -178,14 +178,6 @@ static Node *mul(void);
 static Node *unary(void);
 static Node *primary_expr(void);
 
-static Node *new_arr_ref_node(Var *var) {
-  Node *node = new_uarray(ND_ARR_REF, add());
-  expect(']');
-  node->var = var;
-  node->typ = var->typ;
-  return node;
-}
-
 static Node *func_args() {
   if (consume(")"))
     return NULL;
@@ -532,9 +524,15 @@ static Node *primary_expr(void) {
     // find variable.
     Var *var = find_var(tok);
     if (var) {
-      if (consume("["))
-        return new_arr_ref_node(var);
-      return new_var_node(var);
+      if (consume("[")) {
+        Node *ref_node = new_var_node(var);
+        Node *add_node = new_add(ref_node, primary_expr());
+        Node *uarray_node = new_uarray(ND_REF, add_node);
+        expect(']');
+        return uarray_node;
+      } else {
+        return new_var_node(var);
+      }
     }
     error_at(token->str, "can't handle with undefined variable.");
   }
@@ -645,18 +643,6 @@ void code_gen(Node *node) {
     printf("  push rax\n");
     return;
   }
-  case ND_ARR_REF:
-    gen_var_addr(node);
-    code_gen(node->lhs);
-
-    printf("  pop rdi\n");
-    printf("  pop rax\n");
-    printf("  imul rdi, 8\n");
-    printf("  add rax, rdi\n");
-    printf("  push rax\n");
-    load_64();
-    printf("  add rsp, 8\n");
-    return;
   case ND_GNU_BLOCK:
     for (Node *n = node->block; n; n = n->next)
       code_gen(n);

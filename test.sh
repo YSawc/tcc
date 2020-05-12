@@ -125,8 +125,14 @@ assert 3 'int main() { char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; return *(ca+2); 
 assert 2 'int main() { int x[2]; *(1+x)=2; return *(x+1); }'
 assert 1 'int main() { char ca[2]; *(ca+1)=1; return *(1+ca); }'
 
-assert 2 'int main() { int x[2]; x[0]=2; return x[0]; }'
-assert 2 'int main() { int x[2]; x[1]=2; return x[1]; }'
-assert 2 'int main() { int x[2]; x[2]=2; return x[2]; }'
+assert 1 'int main() { int x[2]; x[0]=1; return x[0]; }'
+assert 2 'int main() { int x[2]; x[0]=1; x[1]=2; x[2]=3; return x[1]; }'
+assert 3 'int main() { int x[2]; x[0]=1; x[1]=2; x[2]=3; return x[2]; }'
+
+assert 1 'int main() { char ca[2]; ca[0]=1; ca[1]=2; ca[2]=3; return ca[0]; }'
+assert 2 'int main() { char ca[2]; ca[0]=1; ca[1]=2; ca[2]=3; return ca[1]; }'
+assert 3 'int main() { char ca[2]; ca[0]=1; ca[1]=2; ca[2]=3; return ca[2]; }'
+
+assert 2 'int main() { int x[1]; *(x+0)=1; x[1]=2; return *(x+1); }'
 
 echo OK
