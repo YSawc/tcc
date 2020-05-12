@@ -551,6 +551,16 @@ static Node *primary_expr(void) {
     return node;
   }
 
+  // case of char literal.
+  if (consume("'")) {
+    if (strlen(token->str) != 1)
+      error_at(token->str, "contents type of char must be char.");
+    int i = token->str[0];
+    token = token->next;
+    expect('\'');
+    return new_num(i);
+  }
+
   return new_num(expect_number());
 }
 

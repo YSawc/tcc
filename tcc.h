@@ -119,7 +119,6 @@ typedef enum {
   ND_EOF,       // EOF
   ND_VAR,       // Variable
   ND_FNC,       // Function
-  ND_ARR_REF,   // reference of array
   ND_ASSIGN,    // =
   ND_GNU_BLOCK, // ({})
   ND_BLOCK,     // { }

@@ -88,6 +88,7 @@ assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'
 
 assert 8 'int main() { int i = 6; return sizeof(i); }'
 assert 8 'int g; int main() { return sizeof(g); }'
+assert 1 'int main() { char ca[4]; return sizeof(ca); }'
 
 assert 3 'int main() { int x=3; return *&x; }'
 assert 3 'int main() { int x=3; int y = &x; int z = &y; return **z; }'
@@ -135,4 +136,7 @@ assert 3 'int main() { char ca[2]; ca[0]=1; ca[1]=2; ca[2]=3; return ca[2]; }'
 
 assert 2 'int main() { int x[1]; *(x+0)=1; x[1]=2; return *(x+1); }'
 
+assert 97 "int main() { char c = 'a'; return c; }"
+assert 98 "int main() { char c = 'b'; return c; }"
+assert 99 "int main() { char c = 'c'; return c; }"
 echo OK
