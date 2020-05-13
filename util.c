@@ -12,8 +12,7 @@ void error_at(char *loc, char *fmt, ...) {
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
   } else {
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
+    printf("expected: %s.", loc);
   }
   exit(1);
 }
@@ -43,15 +42,15 @@ char *strTypeOfVar(char *s, int l) {
 }
 
 char *strtoalpha(char *s) {
-  char *strArr = calloc(1, strlen(s));
+  int l = 0;
   for (int i = 0; s[i] != '\0'; i++) {
     if (isalpha(s[i]) || isdigit(s[i])) {
-      strArr[i] = s[i];
+      l++;
     } else {
       break;
     }
   }
-  return strArr;
+  return strndup(s, l);
 }
 
 int lenIsDigit(char *s) {
