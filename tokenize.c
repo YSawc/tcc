@@ -7,6 +7,10 @@ bool at_eof() { return token->kind == TK_EOF; }
 
 // Consumes the current token if it matches `op`.
 Token *consume(char *op) {
+  if (!token) {
+    fprintf(stderr, "parse token not detected.");
+    exit(1);
+  }
   if (strlen(op) != token->len || strncmp(token->str, op, token->len))
     return NULL;
   Token *t = token;
@@ -69,6 +73,25 @@ Token *tokenize(void) {
 
     // WhiteSpace literal
     if (isspace(*p)) {
+      p++;
+      continue;
+    };
+
+    if (*p == '"') {
+      p++;
+      char *q = p;
+      int len = 0;
+      while (*p && *p != '"') {
+        if (!*p) {
+          fprintf(stderr, "string literal must close with \".");
+          exit(1);
+        }
+        p++;
+        len++;
+      }
+      cur = new_token(TK_STR, cur, q, p - q);
+      cur->str = strndup(q, p - q);
+      cur->len = p - q;
       p++;
       continue;
     };

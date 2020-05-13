@@ -18,7 +18,14 @@ static void emit_globals_data(Program *prog) {
   printf("  .data\n");
   for (Var *var = prog->gVars; var; var = var->next) {
     printf("%s:\n", var->name);
-    printf("  .zero %d\n", var->typ->size);
+
+    if (!var->contents) {
+      printf("  .zero %d\n", var->typ->size);
+      continue;
+    }
+
+    for (int i = 0; i < strlen(var->contents); i++)
+      printf("  .byte %d\n", var->contents[i]);
   }
 }
 

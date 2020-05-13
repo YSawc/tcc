@@ -43,6 +43,13 @@ static void store_val(Type *typ) {
   printf("  push rdi\n");
 }
 
+static char *new_label(void) {
+  static int cnt = 0;
+  char buf[20];
+  sprintf(buf, ".L.data.%d", cnt++);
+  return strndup(buf, 20);
+}
+
 static Var *new_lvar(char *name, Type *typ) {
   if (!typ)
     error_at(token->str, "expected type, but not detected.");
@@ -56,6 +63,7 @@ static Var *new_lvar(char *name, Type *typ) {
   lVars = var;
   return var;
 }
+
 static Var *new_arr_var(char *name, int l, Type *typ) {
   Var *ret_v;
   Var *var = calloc(1, sizeof(Var));
@@ -128,14 +136,6 @@ static Node *new_num(long val) {
 }
 
 static Node *new_var_node(Var *var) {
-  // TODO: delete this
-  if (consume("[")) {
-    int n = expect_number();
-    n = n;
-    expect(']');
-    return NULL;
-  }
-
   Node *node = new_node(ND_VAR);
   node->var = var;
   node->typ = var->typ;
@@ -481,6 +481,7 @@ static Node *unary() {
 /*              | Ident "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
+/*              | "\"" {contents} "\"" */
 static Node *primary_expr(void) {
   if (consume("(")) {
     if (consume("{")) {
@@ -559,6 +560,20 @@ static Node *primary_expr(void) {
     token = token->next;
     expect('\'');
     return new_num(i);
+  }
+
+  // case of string literal.
+  if (token->kind == TK_STR) {
+
+    // string should parsed as global variable because formed as data-section.
+    Var *var = calloc(1, sizeof(Var));
+    var->next = gVars;
+    var->name = new_label();
+    var->typ = typ_char;
+    var->contents = token->str;
+    gVars = var;
+    token = token->next;
+    return new_var_node(var);
   }
 
   return new_num(expect_number());

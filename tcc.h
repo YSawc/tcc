@@ -30,6 +30,7 @@ int lenIsDigit(char *s);
 typedef enum {
   TK_RESERVED, // Reserved literal
   TK_NUM,      // Integer literal
+  TK_STR,      // String literal
   TK_RETURN,   // Return literal
   TK_EOF,      // End-of-file literal
   TK_IDENT,    // Ident literal
@@ -96,6 +97,8 @@ struct Var {
   int offset;    // Offset from RBP
   Type *typ;     // type
   bool is_local; // true if local variable
+
+  char *contents; // stirng contents
 };
 
 // AST node
