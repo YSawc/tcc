@@ -2,6 +2,7 @@
 cat <<EOF | gcc -xc -c -o tmp2.o -
 int ret3() { return 3; }
 int add(int x, int y) { return x+y; }
+int add6(int x, int y, int z, int l, int m, int n) { return x+y+z+l+m+n; }
 EOF
 assert() {
   expected="$1"
@@ -82,6 +83,7 @@ assert 3 'int main() { return ret3(); }'
 assert 6 'int main() { return ret3() * 2; }'
 
 assert 3 'int main() { return add(1, 2); }'
+assert 21 'int main() { return add6(1, 2, 3, 4, 5, 6); }'
 
 assert 3 'int main() { int i = 3; while(0) 0; return i; }'
 assert 10 'int main() { int i = 3; while(i<10) i = i + 1; return i; }'
