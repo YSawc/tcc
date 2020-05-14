@@ -96,6 +96,23 @@ Token *tokenize(void) {
       continue;
     };
 
+    // Skip line comments.
+    if (startswith(p, "//")) {
+      p += 2;
+      while (*p != '\n')
+        p++;
+      continue;
+    }
+
+    // Skip block comments.
+    if (startswith(p, "/*")) {
+      char *q = strstr(p + 2, "*/");
+      if (!q)
+        error_at(p, "unclosed block comment");
+      p = q + 2;
+      continue;
+    }
+
     // Detector in list of reserved multiple letter
     for (int i = 0; i < sizeof(mSym) / sizeof(*mSym); i++) {
       int tmp_len = strlen(mSym[i]);

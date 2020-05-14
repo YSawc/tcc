@@ -139,4 +139,9 @@ assert 2 'int main() { int x[1]; *(x+0)=1; x[1]=2; return *(x+1); }'
 assert 97 "int main() { char c = 'a'; return c; }"
 assert 98 "int main() { char c = 'b'; return c; }"
 assert 99 "int main() { char c = 'c'; return c; }"
+
+assert 2 'int main() { /* return 1; */ return 2; }'
+assert 2 'int main() { // return 1;
+return 2; }'
+
 echo OK
