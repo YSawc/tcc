@@ -6,6 +6,7 @@ static Var *gVars;
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 static char *func_name;
+void set_current_func(char *c) { func_name = c; }
 
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *node) {
@@ -235,6 +236,7 @@ static void global_var() {
 static Function *function() {
   lVars = NULL;
 
+  int args_c = 0;
   Function *func = calloc(1, sizeof(Function));
   Node head_node = {};
   Node *cur_node = &head_node;
@@ -243,7 +245,19 @@ static Function *function() {
   expect_str("int");
   func_name = expect_ident();
   expect('(');
-  expect(')');
+  if (!consume(")")) {
+    Type *typ = look_type();
+    consume_typ();
+    new_lvar(expect_ident(), typ);
+    args_c++;
+    while (consume(",")) {
+      Type *typ = look_type();
+      consume_typ();
+      new_lvar(expect_ident(), typ);
+      args_c++;
+    }
+    expect(')');
+  }
   expect('{');
   while (!consume("}")) {
     cur_node->next = phase_typ_rev();
@@ -252,6 +266,7 @@ static Function *function() {
 
   func->name = func_name;
   func->node = head_node.next;
+  func->args_c = args_c;
   func->lVars = lVars;
   return func;
 }
@@ -288,18 +303,31 @@ void assign_var_offset(Function *function) {
 }
 
 // emit rsp counts of variables in function.
-void emit_rsp(Function *function) {
+void emit_rsp(Function *func) {
+  int c = 0;
+
   // shift rsp counter counts of local variable.
-  if (function->lVars) {
-    int i = 0;
-    // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
-    for (Var *v = function->lVars; v; v = v->next)
-      i += v->typ->size;
-    i = ((i + 8 - 1) / 8) * 8;
-    printf("  sub rsp, %d\n", i);
-  } else {
-    printf("  sub rsp, 0\n");
-  };
+  for (Var *v = func->lVars; v; v = v->next) {
+    c += v->typ->size;
+  }
+
+  // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
+  c = ((c + 8 - 1) / 8) * 8;
+  printf("  sub rsp, %d\n", c);
+}
+
+void emit_args(Function *func) {
+  if (!func->lVars)
+    return;
+
+  // Push arguments to the stack
+  int i = 0;
+  Var *v = func->lVars;
+  for (int c = 0; c < func->args_c; c++) {
+    printf("  mov [rbp-%d], %s\n", v->offset, arg_regs[func->args_c - i - 1]);
+    v = v->next;
+    i++;
+  }
 }
 
 // In this phase, reveal type of each returned node.
@@ -437,9 +465,9 @@ static Node *add() {
   Node *node = mul();
 
   if (consume("+")) {
-    node = new_add(node, primary_expr());
+    node = new_add(node, add());
   } else if (consume("-")) {
-    node = new_sub(node, primary_expr());
+    node = new_sub(node, add());
   }
 
   return node;
@@ -450,9 +478,9 @@ static Node *mul() {
   Node *node = unary();
 
   if (consume("*")) {
-    node = new_binary(ND_MUL, node, primary_expr());
+    node = new_binary(ND_MUL, node, mul());
   } else if (consume("/")) {
-    node = new_binary(ND_DIV, node, primary_expr());
+    node = new_binary(ND_DIV, node, mul());
   }
 
   return node;
@@ -611,39 +639,42 @@ void code_gen(Node *node) {
     else
       load_64();
     return;
-  case ND_IF:
-    conditional_c++;
+  case ND_IF: {
+    int c = conditional_c++;
     if (node->els) {
       code_gen(node->cond);
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
-      printf("  je .L.else.%d\n", conditional_c);
+      printf("  je .L.else.%d\n", c);
       code_gen(node->then);
-      printf("  jmp .L.end.%d\n", conditional_c);
-      printf(".L.else.%d:\n", conditional_c);
+      printf("  jmp .L.end.%d\n", c);
+      printf(".L.else.%d:\n", c);
       code_gen(node->els);
-      printf(".L.end.%d:\n", conditional_c);
+      printf(".L.end.%d:\n", c);
     } else {
       code_gen(node->cond);
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
-      printf("  je .L.end.%d\n", conditional_c);
+      printf("  je .L.end.%d\n", c);
       code_gen(node->then);
-      printf(".L.end.%d:\n", conditional_c);
+      printf(".L.end.%d:\n", c);
     }
     return;
-  case ND_WHILE:
-    conditional_c++;
-    printf(".L.begin.%d:\n", conditional_c);
+  }
+  case ND_WHILE: {
+    int c = conditional_c++;
+    printf(".L.begin.%d:\n", c);
     code_gen(node->cond);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je .L.end.%d\n", conditional_c);
+    printf("  je .L.end.%d\n", c);
     code_gen(node->stmt);
-    printf("  jmp .L.begin.%d\n", conditional_c);
-    printf(".L.end.%d:\n", conditional_c);
+    printf("  jmp .L.begin.%d\n", c);
+    printf(".L.end.%d:\n", c);
     return;
+  }
   case ND_FNC: {
+    int c = conditional_c++;
     int args_c = 0;
     for (Node *arg = node->args; arg; arg = arg->next) {
       code_gen(arg);
@@ -654,17 +685,16 @@ void code_gen(Node *node) {
       printf("  pop %s\n", arg_regs[i]);
     printf("  mov rax, rsp\n");
     printf("  and rax, 15\n");
-    printf("  jnz .L.call.1\n");
+    printf("  jnz .L.call.%d\n", c);
     printf("  mov rax, 0\n");
     printf("  call %s\n", node->str);
-    printf("  jmp .L.end.1\n");
-    printf(".L.call.1:\n");
+    printf("  jmp .L.end.%d\n", c);
+    printf(".L.call.%d:\n", c);
     printf("  sub rsp, 8\n");
     printf("  mov rax, 0\n");
     printf("  call %s\n", node->str);
     printf("  add rsp, 8\n");
-    printf(".L.end.1:\n");
-    printf("  push rax\n");
+    printf(".L.end.%d:\n", c);
     printf("  push rax\n");
     return;
   }

@@ -89,6 +89,8 @@ bool lr_if_or(Node *node, Kind k);
 // codegen.c
 //
 
+void set_current_func(char *c);
+
 // Local variable
 typedef struct Var Var;
 struct Var {
@@ -165,6 +167,7 @@ struct Function {
   Node *node;
   Var *lVars;
   int stack_size;
+  int args_c;
 };
 
 typedef struct Program Program;
@@ -176,6 +179,7 @@ struct Program {
 Program *gen_program(void);
 void assign_var_offset(Function *function);
 void emit_rsp(Function *function);
+void emit_args(Function *function);
 
 void code_gen(Node *node);
 

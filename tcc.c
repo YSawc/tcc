@@ -49,14 +49,17 @@ static void emit_data() {
   assign_var_offset(prog->func);
 
   for (Function *func = prog->func; func; func = func->next) {
-    int i = 0;
+    int o = 0; // offset for variables.
+    // emit offset to each variables count up within starts from args data.
     for (Var *v = func->lVars; v; v = v->next) {
-      i += v->typ->size;
-      v->offset = i;
+      o += v->typ->size;
+      v->offset = o;
     }
 
     emit_function(func);
-    emit_rsp(prog->func);
+    emit_rsp(func);
+    emit_args(func);
+    set_current_func(func->name);
     for (Node *node = func->node; node; node = node->next) {
       code_gen(node);
     }

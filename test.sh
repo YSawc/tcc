@@ -110,6 +110,9 @@ assert 2 'int main() { int i = 10; char c = 1; char h = 2; return h; }'
 
 assert 4 'int main() { return ret4(); } int ret4() { return 4; }'
 assert 12 'int main() { return ret4() * 3; } int ret4() { return 4; }'
+assert 7 'int main() { return add2(3,4); } int add2(int x,int y) { return x+y; }'
+assert 2 'int main() { return sub2(3,1); } int sub2(int x,int y) { return x-y; }'
+assert 55 'int main() { return fib(9); } int fib(int x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
 
 assert 0 'int main() { return ({ 0; }); }'
 assert 3 'int main() { return ({ int i = 3; i; }); }'
