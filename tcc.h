@@ -65,6 +65,7 @@ typedef enum {
   TYP_INT,
   TYP_CHAR_ARR,
   TYP_INT_ARR,
+  TYP_D_BY, // type data byte
   TYP_PTR,
 } Kind;
 
@@ -80,6 +81,7 @@ extern Type *typ_char;
 extern Type *typ_int;
 extern Type *typ_char_arr;
 extern Type *typ_int_arr;
+extern Type *typ_d_by;
 
 bool is_integer(Type *typ);
 void typ_rev(Node *node);
@@ -101,6 +103,8 @@ struct Var {
   bool is_local; // true if local variable
 
   char *contents; // stirng contents
+
+  int ln; // label number
 };
 
 // AST node
