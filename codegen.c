@@ -14,6 +14,8 @@ static void gen_var_addr(Node *nd) {
   Var *var = nd->var;
   if (nd->kind == ND_REF) {
     code_gen(nd->lhs);
+  } else if (var->contents) {
+    printf("  push offset .L.data.%d\n", var->ln);
   } else if (var->is_local) {
     printf("  lea rax, [rbp-%d]\n", var->offset);
     printf("  push rax\n");
@@ -641,7 +643,7 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
-    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
+    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR && nd->ty->kind != TY_D_BY)
       load_64();
     return;
   case ND_ASSIGN:
@@ -748,7 +750,7 @@ void code_gen(Node *nd) {
     printf("  add rax, rdi\n");
     break;
   case ND_PTR_ADD:
-    if (lr_if_or(nd, TY_CHAR_ARR))
+    if (lr_if_or(nd, TY_CHAR_ARR) || lr_if_or(nd, TY_D_BY))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");
@@ -758,7 +760,7 @@ void code_gen(Node *nd) {
     printf("  sub rax, rdi\n");
     break;
   case ND_PTR_SUB:
-    if (lr_if_or(nd, TY_INT_ARR))
+    if (lr_if_or(nd, TY_INT_ARR) || lr_if_or(nd, TY_D_BY))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");

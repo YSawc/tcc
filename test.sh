@@ -150,5 +150,8 @@ assert 2 'int main() { // return 1;
 return 2; }'
 
 assert 0 'int main() { char *s = "test"; return 0; }'
+assert 97 'int main() { char *s = "abc"; return s[0]; }'
+assert 98 'int main() { char *s = "abc"; return s[1]; }'
+assert 99 'int main() { char *s = "abc"; return s[2]; }'
 
 echo OK
