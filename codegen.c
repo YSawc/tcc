@@ -2,6 +2,7 @@
 
 static Var *lVars;
 static Var *gVars;
+static int conditional_c = 0;
 
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
@@ -350,6 +351,7 @@ static Node *stmt() {
 
   if (consume("if")) {
     Node *node = new_node(ND_IF);
+    node->ln = conditional_c++;
     expect('(');
     node->cond = relational();
     expect(')');
@@ -362,6 +364,7 @@ static Node *stmt() {
 
   if (consume("while")) {
     Node *node = new_node(ND_WHILE);
+    node->ln = conditional_c++;
     expect('(');
     node->cond = equality();
     expect(')');
@@ -413,8 +416,8 @@ static Node *equality(void) {
     }
   }
 };
-
 /* relational = add ("<" add | "<=" add | ">" add | ">=" add)* */
+
 static Node *relational(void) {
   Node *node = add();
   for (;;) {
@@ -545,6 +548,7 @@ static Node *primary_expr(void) {
     // find function.
     if (consume("(")) {
       Node *node = new_node(ND_FNC);
+      node->ln = conditional_c++;
       node->str = tok->str;
       node->args = func_args();
       return node;
@@ -607,8 +611,6 @@ static Node *primary_expr(void) {
   return new_num(expect_number());
 }
 
-static int conditional_c = 0;
-
 void code_gen(Node *node) {
   switch (node->kind) {
   case ND_NULL:
@@ -640,7 +642,7 @@ void code_gen(Node *node) {
       load_64();
     return;
   case ND_IF: {
-    int c = conditional_c++;
+    int c = node->ln;
     if (node->els) {
       code_gen(node->cond);
       printf("  pop rax\n");
@@ -662,7 +664,7 @@ void code_gen(Node *node) {
     return;
   }
   case ND_WHILE: {
-    int c = conditional_c++;
+    int c = node->ln;
     printf(".L.begin.%d:\n", c);
     code_gen(node->cond);
     printf("  pop rax\n");
@@ -674,7 +676,7 @@ void code_gen(Node *node) {
     return;
   }
   case ND_FNC: {
-    int c = conditional_c++;
+    int c = node->ln;
     int args_c = 0;
     for (Node *arg = node->args; arg; arg = arg->next) {
       code_gen(arg);

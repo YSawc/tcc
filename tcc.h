@@ -158,6 +158,8 @@ struct Node {
   char *str; // Token string
 
   Type *typ; // type of node.
+
+  int ln; // label number
 };
 
 typedef struct Function Function;
