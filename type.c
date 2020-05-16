@@ -1,45 +1,45 @@
 #include "tcc.h"
 
-Type *typ_char = &(Type){TYP_CHAR, 1};
-Type *typ_int = &(Type){TYP_INT, 8};
-Type *typ_char_arr = &(Type){TYP_CHAR_ARR, 1};
-Type *typ_int_arr = &(Type){TYP_INT_ARR, 8};
-Type *typ_d_by = &(Type){TYP_D_BY, 1};
+Type *ty_char = &(Type){TY_CHAR, 1};
+Type *ty_int = &(Type){TY_INT, 8};
+Type *ty_char_arr = &(Type){TY_CHAR_ARR, 1};
+Type *ty_int_arr = &(Type){TY_INT_ARR, 8};
+Type *ty_d_by = &(Type){TY_D_BY, 1};
 
-bool is_integer(Type *typ) { return typ->kind == TYP_INT; }
+bool is_integer(Type *ty) { return ty->kind == TY_INT; }
 
 Type *pointer_to(Type *base) {
-  Type *typ = calloc(1, sizeof(Type));
-  typ->kind = TYP_PTR;
-  typ->base = base;
-  return typ;
+  Type *ty = calloc(1, sizeof(Type));
+  ty->kind = TY_PTR;
+  ty->base = base;
+  return ty;
 }
 
 // Boolean formed intermediate within LR or.
-bool lr_if_or(Node *node, Kind k) {
-  return node->typ->kind == k || k == node->rhs->typ->kind;
+bool lr_if_or(Node *nd, Kind k) {
+  return nd->ty->kind == k || k == nd->rhs->ty->kind;
 }
 
-void typ_rev(Node *node) {
-  if (!node || node->typ)
+void typ_rev(Node *nd) {
+  if (!nd || nd->ty)
     return;
 
-  typ_rev(node->lhs);
-  typ_rev(node->rhs);
-  typ_rev(node->cond);
-  typ_rev(node->stmt);
+  typ_rev(nd->lhs);
+  typ_rev(nd->rhs);
+  typ_rev(nd->cond);
+  typ_rev(nd->stmt);
 
-  typ_rev(node->args);
+  typ_rev(nd->args);
 
-  typ_rev(node->els);
-  typ_rev(node->then);
+  typ_rev(nd->els);
+  typ_rev(nd->then);
 
-  for (Node *n = node->args; n; n = n->next)
+  for (Node *n = nd->args; n; n = n->next)
     typ_rev(n);
-  for (Node *n = node->block; n; n = n->next)
+  for (Node *n = nd->block; n; n = n->next)
     typ_rev(n);
 
-  switch (node->kind) {
+  switch (nd->kind) {
   case ND_NUM:
   case ND_ADD:
   case ND_SUB:
@@ -51,20 +51,20 @@ void typ_rev(Node *node) {
   case ND_LTE:
   case ND_VAR:
   case ND_FNC:
-    node->typ = typ_int;
+    nd->ty = ty_int;
     return;
   case ND_PTR_ADD:
   case ND_PTR_SUB:
   case ND_ASSIGN:
-    node->typ = node->lhs->typ;
-    if (node->lhs->var && node->rhs->typ == typ_char)
-      node->lhs->var = node->rhs->var;
+    nd->ty = nd->lhs->ty;
+    if (nd->lhs->var && nd->rhs->ty == ty_char)
+      nd->lhs->var = nd->rhs->var;
     return;
   case ND_ADDR:
-    node->typ = pointer_to(node->lhs->typ);
+    nd->ty = pointer_to(nd->lhs->ty);
     return;
   case ND_REF:
-    node->typ = node->lhs->typ;
+    nd->ty = nd->lhs->ty;
     return;
   default:
     return;

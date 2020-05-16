@@ -6,19 +6,19 @@ static int conditional_c = 0;
 
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
-static char *func_name;
-void set_current_func(char *c) { func_name = c; }
+static char *fn_nm;
+void set_current_fn(char *c) { fn_nm = c; }
 
 // Pushes the given node's address to the stack.
-static void gen_var_addr(Node *node) {
-  Var *var = node->var;
-  if (node->kind == ND_REF) {
-    code_gen(node->lhs);
+static void gen_var_addr(Node *nd) {
+  Var *var = nd->var;
+  if (nd->kind == ND_REF) {
+    code_gen(nd->lhs);
   } else if (var->is_local) {
     printf("  lea rax, [rbp-%d]\n", var->offset);
     printf("  push rax\n");
   } else {
-    printf("  push offset %s\n", var->name);
+    printf("  push offset %s\n", var->nm);
   }
   return;
 }
@@ -35,10 +35,10 @@ static void load_64(void) {
   printf("  push rax\n");
 }
 
-static void store_val(Type *typ) {
+static void store_val(Type *ty) {
   printf("  pop rdi\n");
   printf("  pop rax\n");
-  if (typ->kind == TYP_CHAR_ARR)
+  if (ty->kind == TY_CHAR_ARR)
     printf("  mov [rax], dil\n");
   else
     printf("  mov [rax], rdi\n");
@@ -52,37 +52,37 @@ static char *new_label(void) {
   return strndup(buf, t);
 }
 
-static Var *new_lvar(char *name, Type *typ) {
-  if (!typ)
+static Var *new_lvar(char *nm, Type *ty) {
+  if (!ty)
     error_at(token->str, "expected type, but not detected.");
 
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-  var->typ = typ;
+  var->ty = ty;
 
-  var->name = name;
+  var->nm = nm;
   var->is_local = true;
   lVars = var;
   return var;
 }
 
-static Var *new_arr_var(char *name, int l, Type *typ) {
+static Var *new_arr_var(char *nm, int l, Type *ty) {
   Var *ret_v;
   Var *var = calloc(1, sizeof(Var));
   var->next = lVars;
-  if (typ == typ_char)
-    var->typ = typ_char_arr;
-  else if (typ == typ_int)
-    var->typ = typ_int_arr;
-  var->name = name;
+  if (ty == ty_char)
+    var->ty = ty_char_arr;
+  else if (ty == ty_int)
+    var->ty = ty_int_arr;
+  var->nm = nm;
   var->is_local = true;
   lVars = var;
 
   for (int l_i = 0; l_i < l; l_i++) {
     Var *tmp = calloc(1, sizeof(Var));
     tmp->next = lVars;
-    tmp->typ = var->typ;
-    tmp->name = "";
+    tmp->ty = var->ty;
+    tmp->nm = "";
     tmp->is_local = true;
     lVars = tmp;
 
@@ -95,11 +95,11 @@ static Var *new_arr_var(char *name, int l, Type *typ) {
 // find variable scope of a whole
 static Var *find_var(Token *tok) {
   for (Var *v = lVars; v; v = v->next)
-    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
+    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
 
   for (Var *v = gVars; v; v = v->next)
-    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
+    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
   return NULL;
 }
@@ -107,48 +107,48 @@ static Var *find_var(Token *tok) {
 // find variable scope of local
 static Var *find_lvar(Token *tok) {
   for (Var *v = lVars; v; v = v->next)
-    if (strlen(v->name) == tok->len && !strncmp(v->name, tok->str, tok->len))
+    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
   return NULL;
 }
 
-static Node *new_node(NodeKind kind) {
-  Node *node = calloc(1, sizeof(Node));
-  node->kind = kind;
-  return node;
+static Node *new_nd(NodeKind kind) {
+  Node *nd = calloc(1, sizeof(Node));
+  nd->kind = kind;
+  return nd;
 }
 
 static Node *new_binary(NodeKind kind, Node *lhs, Node *rhs) {
-  Node *node = new_node(kind);
-  node->lhs = lhs;
-  node->rhs = rhs;
-  return node;
+  Node *nd = new_nd(kind);
+  nd->lhs = lhs;
+  nd->rhs = rhs;
+  return nd;
 }
 
 static Node *new_uarray(NodeKind kind, Node *lhs) {
-  Node *node = new_node(kind);
-  node->lhs = lhs;
-  return node;
+  Node *nd = new_nd(kind);
+  nd->lhs = lhs;
+  return nd;
 }
 
 static Node *new_num(long val) {
-  Node *node = new_node(ND_NUM);
-  node->val = val;
-  return node;
+  Node *nd = new_nd(ND_NUM);
+  nd->val = val;
+  return nd;
 }
 
-static Node *new_var_node(Var *var) {
-  Node *node = new_node(ND_VAR);
-  node->var = var;
-  node->typ = var->typ;
-  node->str = var->name;
+static Node *new_var_nd(Var *var) {
+  Node *nd = new_nd(ND_VAR);
+  nd->var = var;
+  nd->ty = var->ty;
+  nd->str = var->nm;
 
-  if (var->typ->base)
-    node->typ->base = var->typ->base;
-  return node;
+  if (var->ty->base)
+    nd->ty->base = var->ty->base;
+  return nd;
 }
 
-static Node *expect_dec(Type *typ) {
+static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
   Var *var = find_lvar(tok);
   if (var)
@@ -157,33 +157,33 @@ static Node *expect_dec(Type *typ) {
   if (consume("[")) {
     int l = expect_number();
     expect(']');
-    var = new_arr_var(tok->str, l, typ);
-    var->typ->base = typ;
-    Node *node = new_node(ND_NULL);
-    node->var = var;
-    return node;
+    var = new_arr_var(tok->str, l, ty);
+    var->ty->base = ty;
+    Node *nd = new_nd(ND_NULL);
+    nd->var = var;
+    return nd;
   }
 
   if (consume("*")) {
-    if (typ == typ_char)
-      typ = typ_d_by;
+    if (ty == ty_char)
+      ty = ty_d_by;
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    var = new_lvar(consume_ident()->str, typ);
+    var = new_lvar(consume_ident()->str, ty);
     expect('=');
     var->contents = token->str;
     token = token->next;
     var->ln = conditional_c++;
-    var->typ->base = typ;
-    return new_node(ND_NULL);
+    var->ty->base = ty;
+    return new_nd(ND_NULL);
   }
 
-  var = new_lvar(tok->str, typ);
+  var = new_lvar(tok->str, ty);
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
-    return new_node(ND_NULL);
-  return new_var_node(var);
+    return new_nd(ND_NULL);
+  return new_var_nd(var);
 }
 
 static Node *phase_typ_rev(void);
@@ -210,7 +210,7 @@ static Node *func_args() {
   return head;
 }
 
-static bool is_function(void) {
+static bool is_fn(void) {
   Token *tok = token;
   expect_str("int");
   bool isfunc = consume_ident() && consume("(");
@@ -220,9 +220,9 @@ static bool is_function(void) {
 
 static Type *look_type(void) {
   if (strcmp(token->str, "int") == 0)
-    return typ_int;
+    return ty_int;
   if (strcmp(token->str, "char") == 0)
-    return typ_char;
+    return ty_char;
   return NULL;
 }
 
@@ -241,110 +241,110 @@ static void consume_typ(void) {
 
 static void global_var() {
   expect_str("int");
-  char *name = expect_ident();
+  char *nm = expect_ident();
   expect(';');
   Var *var = calloc(1, sizeof(Var));
   var->next = gVars;
-  var->typ = typ_int;
-  var->name = name;
+  var->ty = ty_int;
+  var->nm = nm;
   gVars = var;
 }
 
-static Function *function() {
+static Function *fn() {
   lVars = NULL;
 
   int args_c = 0;
-  Function *func = calloc(1, sizeof(Function));
-  Node head_node = {};
-  Node *cur_node = &head_node;
+  Function *fn = calloc(1, sizeof(Function));
+  Node head_nd = {};
+  Node *cur_nd = &head_nd;
 
-  // in this scope, be in internal of function.
+  // in this scope, be in internal of fn.
   expect_str("int");
-  func_name = expect_ident();
+  fn_nm = expect_ident();
   expect('(');
   if (!consume(")")) {
-    Type *typ = look_type();
+    Type *ty = look_type();
     consume_typ();
-    new_lvar(expect_ident(), typ);
+    new_lvar(expect_ident(), ty);
     args_c++;
     while (consume(",")) {
-      Type *typ = look_type();
+      Type *ty = look_type();
       consume_typ();
-      new_lvar(expect_ident(), typ);
+      new_lvar(expect_ident(), ty);
       args_c++;
     }
     expect(')');
   }
   expect('{');
   while (!consume("}")) {
-    cur_node->next = phase_typ_rev();
-    cur_node = cur_node->next;
+    cur_nd->next = phase_typ_rev();
+    cur_nd = cur_nd->next;
   }
 
-  func->name = func_name;
-  func->node = head_node.next;
-  func->args_c = args_c;
-  func->lVars = lVars;
-  return func;
+  fn->nm = fn_nm;
+  fn->nd = head_nd.next;
+  fn->args_c = args_c;
+  fn->lVars = lVars;
+  return fn;
 }
 
 // program = stmt*
 Program *gen_program(void) {
   gVars = NULL;
 
-  Function head_func = {};
-  Function *func_cur = &head_func;
+  Function head_fn = {};
+  Function *fn_cur = &head_fn;
 
   // detect global functoin.
-  while (!is_function()) {
+  while (!is_fn()) {
     global_var();
   }
 
   while (!at_eof()) {
-    func_cur->next = function();
-    func_cur = func_cur->next;
+    fn_cur->next = fn();
+    fn_cur = fn_cur->next;
   }
 
   Program *prog = calloc(1, sizeof(Program));
-  prog->func = head_func.next;
+  prog->fn = head_fn.next;
   prog->gVars = gVars;
   return prog;
 }
 
-void assign_var_offset(Function *function) {
+void assign_var_offset(Function *fn) {
   int i = 0;
-  for (Var *v = function->lVars; v; v = v->next) {
+  for (Var *v = fn->lVars; v; v = v->next) {
     // data byte not assigned offset but labeled in sectio of data.
-    if (v->typ != typ_d_by) {
-      i += v->typ->size;
+    if (v->ty != ty_d_by) {
+      i += v->ty->size;
       v->offset = i;
     }
   }
 }
 
-// emit rsp counts of variables in function.
+// emit rsp counts of variables in fn.
 void emit_rsp(Function *func) {
   int c = 0;
 
   // shift rsp counter counts of local variable.
   for (Var *v = func->lVars; v; v = v->next)
-    if (v->typ != typ_d_by)
-      c += v->typ->size;
+    if (v->ty != ty_d_by)
+      c += v->ty->size;
 
   // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
   c = ((c + 8 - 1) / 8) * 8;
   printf("  sub rsp, %d\n", c);
 }
 
-void emit_args(Function *func) {
-  if (!func->lVars)
+void emit_args(Function *fn) {
+  if (!fn->lVars)
     return;
 
   // Push arguments to the stack
   int i = 0;
-  Var *v = func->lVars;
-  for (int c = 0; c < func->args_c; c++) {
-    printf("  mov [rbp-%d], %s\n", v->offset, arg_regs[func->args_c - i - 1]);
+  Var *v = fn->lVars;
+  for (int c = 0; c < fn->args_c; c++) {
+    printf("  mov [rbp-%d], %s\n", v->offset, arg_regs[fn->args_c - i - 1]);
     v = v->next;
     i++;
   }
@@ -352,9 +352,9 @@ void emit_args(Function *func) {
 
 // In this phase, reveal type of each returned node.
 static Node *phase_typ_rev() {
-  Node *node = stmt();
-  typ_rev(node);
-  return node;
+  Node *nd = stmt();
+  typ_rev(nd);
+  return nd;
 }
 
 /* stmt = "return" expr ";" */
@@ -363,32 +363,32 @@ static Node *phase_typ_rev() {
 /*      | "{" stmt* "}" */
 static Node *stmt() {
   if (consume("return")) {
-    Node *node = new_uarray(ND_RETURN, assign());
+    Node *nd = new_uarray(ND_RETURN, assign());
     expect(';');
-    return node;
+    return nd;
   }
 
   if (consume("if")) {
-    Node *node = new_node(ND_IF);
-    node->ln = conditional_c++;
+    Node *nd = new_nd(ND_IF);
+    nd->ln = conditional_c++;
     expect('(');
-    node->cond = relational();
+    nd->cond = relational();
     expect(')');
-    node->then = stmt();
+    nd->then = stmt();
     if (consume("else")) {
-      node->els = stmt();
+      nd->els = stmt();
     }
-    return node;
+    return nd;
   }
 
   if (consume("while")) {
-    Node *node = new_node(ND_WHILE);
-    node->ln = conditional_c++;
+    Node *nd = new_nd(ND_WHILE);
+    nd->ln = conditional_c++;
     expect('(');
-    node->cond = equality();
+    nd->cond = equality();
     expect(')');
-    node->stmt = stmt();
-    return node;
+    nd->stmt = stmt();
+    return nd;
   }
 
   if (consume("{")) {
@@ -400,56 +400,56 @@ static Node *stmt() {
       cur = cur->next;
     }
 
-    Node *node = new_node(ND_BLOCK);
-    node->block = head.next;
-    return node;
+    Node *nd = new_nd(ND_BLOCK);
+    nd->block = head.next;
+    return nd;
   }
 
-  Node *node = assign();
+  Node *nd = assign();
   expect(';');
-  return node;
+  return nd;
 }
 
 // assign = equality ("=" assign)?
 static Node *assign() {
-  Node *node = equality();
+  Node *nd = equality();
 
   if (consume("=")) {
-    Node *n = new_binary(ND_ASSIGN, node, add());
+    Node *n = new_binary(ND_ASSIGN, nd, add());
     return n;
   }
-  return node;
+  return nd;
 }
 
 /* equality = relational ("==" relational | "!=" relational )* */
 static Node *equality(void) {
-  Node *node = relational();
+  Node *nd = relational();
 
   for (;;) {
     if (consume("==")) {
-      node = new_binary(ND_EQ, node, relational());
+      nd = new_binary(ND_EQ, nd, relational());
     } else if (consume("!=")) {
-      node = new_binary(ND_NEQ, node, relational());
+      nd = new_binary(ND_NEQ, nd, relational());
     } else {
-      return node;
+      return nd;
     }
   }
 };
 /* relational = add ("<" add | "<=" add | ">" add | ">=" add)* */
 
 static Node *relational(void) {
-  Node *node = add();
+  Node *nd = add();
   for (;;) {
     if (consume("<")) {
-      node = new_binary(ND_LT, node, add());
+      nd = new_binary(ND_LT, nd, add());
     } else if (consume("<=")) {
-      node = new_binary(ND_LTE, node, add());
+      nd = new_binary(ND_LTE, nd, add());
     } else if (consume(">")) {
-      node = new_binary(ND_LT, add(), node);
+      nd = new_binary(ND_LT, add(), nd);
     } else if (consume(">=")) {
-      node = new_binary(ND_LTE, add(), node);
+      nd = new_binary(ND_LTE, add(), nd);
     } else {
-      return node;
+      return nd;
     }
   }
 };
@@ -458,11 +458,11 @@ static Node *new_add(Node *lhs, Node *rhs) {
   typ_rev(lhs);
   typ_rev(rhs);
 
-  if (is_integer(lhs->typ) && is_integer(rhs->typ))
+  if (is_integer(lhs->ty) && is_integer(rhs->ty))
     return new_binary(ND_ADD, lhs, rhs);
-  if (lhs->typ->base && is_integer(rhs->typ))
+  if (lhs->ty->base && is_integer(rhs->ty))
     return new_binary(ND_PTR_ADD, lhs, rhs);
-  if (is_integer(lhs->typ) && rhs->typ->base)
+  if (is_integer(lhs->ty) && rhs->ty->base)
     return new_binary(ND_PTR_ADD, rhs, lhs);
   error_at(token->str, "invalid operands");
   return NULL;
@@ -472,11 +472,11 @@ static Node *new_sub(Node *lhs, Node *rhs) {
   typ_rev(lhs);
   typ_rev(rhs);
 
-  if (is_integer(lhs->typ) && is_integer(rhs->typ))
+  if (is_integer(lhs->ty) && is_integer(rhs->ty))
     return new_binary(ND_SUB, lhs, rhs);
-  if (lhs->typ->base && is_integer(rhs->typ))
+  if (lhs->ty->base && is_integer(rhs->ty))
     return new_binary(ND_PTR_SUB, lhs, rhs);
-  if (is_integer(lhs->typ) && rhs->typ->base)
+  if (is_integer(lhs->ty) && rhs->ty->base)
     return new_binary(ND_PTR_SUB, rhs, lhs);
   error_at(token->str, "invalid operands");
   return NULL;
@@ -484,28 +484,28 @@ static Node *new_sub(Node *lhs, Node *rhs) {
 
 /* add = mul ( "*" mul | "/" mul )* */
 static Node *add() {
-  Node *node = mul();
+  Node *nd = mul();
 
   if (consume("+")) {
-    node = new_add(node, add());
+    nd = new_add(nd, add());
   } else if (consume("-")) {
-    node = new_sub(node, add());
+    nd = new_sub(nd, add());
   }
 
-  return node;
+  return nd;
 }
 
 /* mul = unary ( "*" unary | "/" unary )* */
 static Node *mul() {
-  Node *node = unary();
+  Node *nd = unary();
 
   if (consume("*")) {
-    node = new_binary(ND_MUL, node, mul());
+    nd = new_binary(ND_MUL, nd, mul());
   } else if (consume("/")) {
-    node = new_binary(ND_DIV, node, mul());
+    nd = new_binary(ND_DIV, nd, mul());
   }
 
-  return node;
+  return nd;
 }
 
 /* unary = ( "+" | "-" | "*" | "&" )? primary_expr */
@@ -518,7 +518,7 @@ static Node *unary() {
     return new_uarray(ND_REF, unary());
   } else if (consume("&")) {
     return new_uarray(ND_ADDR, unary());
-    return node;
+    return nd;
   } else {
     return primary_expr();
   }
@@ -545,52 +545,52 @@ static Node *primary_expr(void) {
       }
 
       expect(')');
-      Node *node = new_node(ND_GNU_BLOCK);
-      node->block = head.next;
-      return node;
+      Node *nd = new_nd(ND_GNU_BLOCK);
+      nd->block = head.next;
+      return nd;
     } else {
-      node = add();
+      nd = add();
       expect(')');
-      return node;
+      return nd;
     }
   }
 
-  Type *typ = look_type();
-  if (typ) {
+  Type *ty = look_type();
+  if (ty) {
     consume_typ();
-    return expect_dec(typ);
+    return expect_dec(ty);
   }
 
   Token *tok = consume_ident();
 
   if (tok) {
-    // find function.
+    // find fn.
     if (consume("(")) {
-      Node *node = new_node(ND_FNC);
-      node->ln = conditional_c++;
-      node->str = tok->str;
-      node->args = func_args();
-      return node;
+      Node *nd = new_nd(ND_FNC);
+      nd->ln = conditional_c++;
+      nd->str = tok->str;
+      nd->args = func_args();
+      return nd;
     }
 
     // find variable.
     Var *var = find_var(tok);
     if (var) {
       if (consume("[")) {
-        Node *ref_node = new_var_node(var);
-        Node *add_node = new_add(ref_node, primary_expr());
-        Node *uarray_node = new_uarray(ND_REF, add_node);
+        Node *ref_nd = new_var_nd(var);
+        Node *add_nd = new_add(ref_nd, primary_expr());
+        Node *uarray_nd = new_uarray(ND_REF, add_nd);
         expect(']');
-        return uarray_node;
+        return uarray_nd;
       } else {
-        return new_var_node(var);
+        return new_var_nd(var);
       }
     }
     error_at(token->str, "can't handle with undefined variable.");
   }
 
   if (consume("sizeof")) {
-    Node *node = calloc(1, sizeof(Node));
+    Node *nd = calloc(1, sizeof(Node));
     expect('(');
     Token *tok = consume_ident();
     if (!tok)
@@ -598,9 +598,9 @@ static Node *primary_expr(void) {
     Var *var = find_var(tok);
     if (!var)
       error_at(tok->str, "expected declaration variable.");
-    node = new_num(var->typ->size);
+    nd = new_num(var->ty->size);
     expect(')');
-    return node;
+    return nd;
   }
 
   // case of char literal.
@@ -619,87 +619,87 @@ static Node *primary_expr(void) {
     // string should parsed as global variable because formed as data-section.
     Var *var = calloc(1, sizeof(Var));
     var->next = gVars;
-    var->name = new_label();
-    var->typ = typ_char;
+    var->nm = new_label();
+    var->ty = ty_char;
     var->contents = token->str;
     var->ln = conditional_c;
     gVars = var;
     token = token->next;
-    Node *node = new_var_node(var);
-    return node;
+    Node *nd = new_var_nd(var);
+    return nd;
   }
 
   return new_num(expect_number());
 }
 
-void code_gen(Node *node) {
-  switch (node->kind) {
+void code_gen(Node *nd) {
+  switch (nd->kind) {
   case ND_NULL:
     return;
   case ND_NUM:
-    printf("  push %ld\n", node->val);
+    printf("  push %ld\n", nd->val);
     return;
   case ND_VAR:
-    gen_var_addr(node);
-    if (node->typ->kind != TYP_INT_ARR && node->typ->kind != TYP_CHAR_ARR)
+    gen_var_addr(nd);
+    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
       load_64();
     return;
   case ND_ASSIGN:
-    gen_var_addr(node->lhs);
-    code_gen(node->rhs);
-    store_val(node->lhs->typ);
-    if (node->lhs->typ->kind == TYP_INT_ARR ||
-        node->lhs->typ->kind == TYP_CHAR_ARR)
+    gen_var_addr(nd->lhs);
+    code_gen(nd->rhs);
+    store_val(nd->lhs->ty);
+    if (nd->lhs->ty->kind == TY_INT_ARR ||
+        nd->lhs->ty->kind == TY_CHAR_ARR)
       printf("  add rsp, 8\n");
     return;
   case ND_ADDR:
-    gen_var_addr(node->lhs);
+    gen_var_addr(nd->lhs);
     return;
   case ND_REF:
-    code_gen(node->lhs);
-    if (node->typ->size == 1)
+    code_gen(nd->lhs);
+    if (nd->ty->size == 1)
       load_8();
     else
       load_64();
     return;
   case ND_IF: {
-    int c = node->ln;
-    if (node->els) {
-      code_gen(node->cond);
+    int c = nd->ln;
+    if (nd->els) {
+      code_gen(nd->cond);
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
       printf("  je .L.else.%d\n", c);
-      code_gen(node->then);
+      code_gen(nd->then);
       printf("  jmp .L.end.%d\n", c);
       printf(".L.else.%d:\n", c);
-      code_gen(node->els);
+      code_gen(nd->els);
       printf(".L.end.%d:\n", c);
     } else {
-      code_gen(node->cond);
+      code_gen(nd->cond);
       printf("  pop rax\n");
       printf("  cmp rax, 0\n");
       printf("  je .L.end.%d\n", c);
-      code_gen(node->then);
+      code_gen(nd->then);
       printf(".L.end.%d:\n", c);
     }
     return;
   }
   case ND_WHILE: {
-    int c = node->ln;
+    int c = nd->ln;
     printf(".L.begin.%d:\n", c);
-    code_gen(node->cond);
+    code_gen(nd->cond);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
     printf("  je .L.end.%d\n", c);
-    code_gen(node->stmt);
+    code_gen(nd->stmt);
     printf("  jmp .L.begin.%d\n", c);
     printf(".L.end.%d:\n", c);
     return;
   }
   case ND_FNC: {
-    int c = node->ln;
+    int c = nd->ln;
     int args_c = 0;
-    for (Node *arg = node->args; arg; arg = arg->next) {
+    for (Node *arg = nd->args; arg; arg = arg->next) {
       code_gen(arg);
       args_c++;
     }
@@ -710,45 +710,45 @@ void code_gen(Node *node) {
     printf("  and rax, 15\n");
     printf("  jnz .L.call.%d\n", c);
     printf("  mov rax, 0\n");
-    printf("  call %s\n", node->str);
+    printf("  call %s\n", nd->str);
     printf("  jmp .L.end.%d\n", c);
     printf(".L.call.%d:\n", c);
     printf("  sub rsp, 8\n");
     printf("  mov rax, 0\n");
-    printf("  call %s\n", node->str);
+    printf("  call %s\n", nd->str);
     printf("  add rsp, 8\n");
     printf(".L.end.%d:\n", c);
     printf("  push rax\n");
     return;
   }
   case ND_GNU_BLOCK:
-    for (Node *n = node->block; n; n = n->next)
+    for (Node *n = nd->block; n; n = n->next)
       code_gen(n);
     return;
   case ND_BLOCK:
-    for (Node *n = node->block; n; n = n->next)
+    for (Node *n = nd->block; n; n = n->next)
       code_gen(n);
     return;
   case ND_RETURN:
-    code_gen(node->lhs);
+    code_gen(nd->lhs);
     printf("  pop rax\n");
-    printf("  jmp .L.return.%s\n", func_name);
+    printf("  jmp .L.return.%s\n", fn_nm);
     return;
   default:;
   }
 
-  code_gen(node->lhs);
-  code_gen(node->rhs);
+  code_gen(nd->lhs);
+  code_gen(nd->rhs);
 
   printf("  pop rdi\n");
   printf("  pop rax\n");
 
-  switch (node->kind) {
+  switch (nd->kind) {
   case ND_ADD:
     printf("  add rax, rdi\n");
     break;
   case ND_PTR_ADD:
-    if (lr_if_or(node, TYP_CHAR_ARR))
+    if (lr_if_or(nd, TY_CHAR_ARR))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");
@@ -758,7 +758,7 @@ void code_gen(Node *node) {
     printf("  sub rax, rdi\n");
     break;
   case ND_PTR_SUB:
-    if (lr_if_or(node, TYP_INT_ARR))
+    if (lr_if_or(nd, TY_INT_ARR))
       printf("  imul rdi, 1\n");
     else
       printf("  imul rdi, 8\n");
@@ -792,7 +792,7 @@ void code_gen(Node *node) {
     printf("  movzb rax, al\n");
     break;
   default:
-    error_at(node->str, "can't generate code from this node.\n");
+    error_at(nd->str, "can't generate code from this node.\n");
   }
 
   printf("  push rax\n");

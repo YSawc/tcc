@@ -1,13 +1,13 @@
 #include "tcc.h"
 
-Node *node;
+Node *nd;
 
 static void emit_prologue() { printf("  .intel_syntax noprefix\n"); }
 
-static void emit_function(Function *function) {
-  char *func_name = function->name;
-  printf("  .global %s\n", func_name);
-  printf("%s:\n", func_name);
+static void emit_fn(Function *fn) {
+  char *fn_nm = fn->nm;
+  printf("  .global %s\n", fn_nm);
+  printf("%s:\n", fn_nm);
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
 }
@@ -18,10 +18,10 @@ static void emit_text(void) { printf("  .text\n"); }
 static void emit_globals_data(Program *prog) {
   printf("  .data\n");
   for (Var *var = prog->gVars; var; var = var->next) {
-    printf("%s:\n", var->name);
+    printf("%s:\n", var->nm);
 
     if (!var->contents) {
-      printf("  .zero %d\n", var->typ->size);
+      printf("  .zero %d\n", var->ty->size);
       continue;
     }
 
@@ -30,8 +30,8 @@ static void emit_globals_data(Program *prog) {
   }
 }
 
-static void emit_out_function(Function *function) {
-  printf(".L.return.%s:\n", function->name);
+static void emit_out_fn(Function *fn) {
+  printf(".L.return.%s:\n", fn->nm);
   printf("  mov rsp, rbp\n");
   printf("  pop rbp\n");
   printf("  ret\n");
@@ -45,12 +45,12 @@ static void emit() {
     emit_globals_data(prog);
 
   // Variable created this phase, so assign each variable with offset.
-  assign_var_offset(prog->func);
+  assign_var_offset(prog->fn);
 
-  for (Function *func = prog->func; func; func = func->next) {
+  for (Function *fn = prog->fn; fn; fn = fn->next) {
     emit_data();
-    for (Var *v = func->lVars; v; v = v->next) {
-      if (v->typ == typ_d_by) {
+    for (Var *v = fn->lVars; v; v = v->next) {
+      if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);
         for (int i = 0; i < strlen(v->contents); i++) {
           printf("  .byte %d\n", v->contents[i]);
@@ -62,20 +62,20 @@ static void emit() {
 
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
-    for (Var *v = func->lVars; v; v = v->next) {
-      o += v->typ->size;
+    for (Var *v = fn->lVars; v; v = v->next) {
+      o += v->ty->size;
       v->offset = o;
     }
 
-    emit_function(func);
-    emit_rsp(func);
-    emit_args(func);
-    set_current_func(func->name);
-    for (Node *node = func->node; node; node = node->next) {
-      code_gen(node);
+    emit_fn(fn);
+    emit_rsp(fn);
+    emit_args(fn);
+    set_current_fn(fn->nm);
+    for (Node *nd = fn->nd; nd; nd = nd->next) {
+      code_gen(nd);
     }
 
-    emit_out_function(func);
+    emit_out_fn(fn);
   }
 }
 

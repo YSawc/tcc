@@ -61,12 +61,12 @@ extern Token *token;
 //
 
 typedef enum {
-  TYP_CHAR,
-  TYP_INT,
-  TYP_CHAR_ARR,
-  TYP_INT_ARR,
-  TYP_D_BY, // type data byte
-  TYP_PTR,
+  TY_CHAR,
+  TY_INT,
+  TY_CHAR_ARR,
+  TY_INT_ARR,
+  TY_D_BY, // type data byte
+  TY_PTR,
 } Kind;
 
 // typedef struct Var Var; // from codegen.c
@@ -77,29 +77,29 @@ struct Type {
   Type *base; // base used when
 };
 
-extern Type *typ_char;
-extern Type *typ_int;
-extern Type *typ_char_arr;
-extern Type *typ_int_arr;
-extern Type *typ_d_by;
+extern Type *ty_char;
+extern Type *ty_int;
+extern Type *ty_char_arr;
+extern Type *ty_int_arr;
+extern Type *ty_d_by;
 
 bool is_integer(Type *typ);
-void typ_rev(Node *node);
-bool lr_if_or(Node *node, Kind k);
+void typ_rev(Node *nd);
+bool lr_if_or(Node *nd, Kind k);
 
 //
 // codegen.c
 //
 
-void set_current_func(char *c);
+void set_current_fn(char *c);
 
 // Local variable
 typedef struct Var Var;
 struct Var {
   Var *next;
-  char *name;    // Variable name
+  char *nm;    // Variable name
   int offset;    // Offset from RBP
-  Type *typ;     // type
+  Type *ty;     // type
   bool is_local; // true if local variable
 
   char *contents; // stirng contents
@@ -161,7 +161,7 @@ struct Node {
   long val;  // If kind is TK_NUM, its value
   char *str; // Token string
 
-  Type *typ; // type of node.
+  Type *ty; // type of node.
 
   int ln; // label number
 };
@@ -169,8 +169,8 @@ struct Node {
 typedef struct Function Function;
 struct Function {
   Function *next;
-  char *name;
-  Node *node;
+  char *nm;
+  Node *nd;
   Var *lVars;
   int stack_size;
   int args_c;
@@ -178,15 +178,15 @@ struct Function {
 
 typedef struct Program Program;
 struct Program {
-  Function *func;
+  Function *fn;
   Var *gVars;
 };
 
 Program *gen_program(void);
-void assign_var_offset(Function *function);
-void emit_rsp(Function *function);
-void emit_args(Function *function);
+void assign_var_offset(Function *fn);
+void emit_rsp(Function *fn);
+void emit_args(Function *fn);
 
-void code_gen(Node *node);
+void code_gen(Node *nd);
 
-extern Node *node;
+extern Node *nd;
