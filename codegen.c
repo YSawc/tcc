@@ -46,10 +46,10 @@ static void store_val(Type *typ) {
 }
 
 static char *new_label(void) {
-  static int cnt = 0;
-  char buf[20];
-  sprintf(buf, ".L.data.%d", cnt++);
-  return strndup(buf, 20);
+  int t = 20;
+  char buf[t];
+  sprintf(buf, ".L.data.%d", conditional_c++);
+  return strndup(buf, t);
 }
 
 static Var *new_lvar(char *name, Type *typ) {
@@ -163,6 +163,22 @@ static Node *expect_dec(Type *typ) {
     node->var = var;
     return node;
   }
+
+  if (consume("*")) {
+    if (typ == typ_char)
+      typ = typ_d_by;
+    else
+      error_at(token->str, "now not support initialize of reference of other "
+                           "than char literal.");
+    var = new_lvar(consume_ident()->str, typ);
+    expect('=');
+    var->contents = token->str;
+    token = token->next;
+    var->ln = conditional_c++;
+    var->typ->base = typ;
+    return new_node(ND_NULL);
+  }
+
   var = new_lvar(tok->str, typ);
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
@@ -298,8 +314,11 @@ Program *gen_program(void) {
 void assign_var_offset(Function *function) {
   int i = 0;
   for (Var *v = function->lVars; v; v = v->next) {
-    i += v->typ->size;
-    v->offset = i;
+    // data byte not assigned offset but labeled in sectio of data.
+    if (v->typ != typ_d_by) {
+      i += v->typ->size;
+      v->offset = i;
+    }
   }
 }
 
@@ -308,9 +327,9 @@ void emit_rsp(Function *func) {
   int c = 0;
 
   // shift rsp counter counts of local variable.
-  for (Var *v = func->lVars; v; v = v->next) {
-    c += v->typ->size;
-  }
+  for (Var *v = func->lVars; v; v = v->next)
+    if (v->typ != typ_d_by)
+      c += v->typ->size;
 
   // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
   c = ((c + 8 - 1) / 8) * 8;
@@ -603,9 +622,11 @@ static Node *primary_expr(void) {
     var->name = new_label();
     var->typ = typ_char;
     var->contents = token->str;
+    var->ln = conditional_c;
     gVars = var;
     token = token->next;
-    return new_var_node(var);
+    Node *node = new_var_node(var);
+    return node;
   }
 
   return new_num(expect_number());

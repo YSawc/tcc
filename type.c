@@ -4,6 +4,7 @@ Type *typ_char = &(Type){TYP_CHAR, 1};
 Type *typ_int = &(Type){TYP_INT, 8};
 Type *typ_char_arr = &(Type){TYP_CHAR_ARR, 1};
 Type *typ_int_arr = &(Type){TYP_INT_ARR, 8};
+Type *typ_d_by = &(Type){TYP_D_BY, 1};
 
 bool is_integer(Type *typ) { return typ->kind == TYP_INT; }
 
@@ -56,6 +57,8 @@ void typ_rev(Node *node) {
   case ND_PTR_SUB:
   case ND_ASSIGN:
     node->typ = node->lhs->typ;
+    if (node->lhs->var && node->rhs->typ == typ_char)
+      node->lhs->var = node->rhs->var;
     return;
   case ND_ADDR:
     node->typ = pointer_to(node->lhs->typ);

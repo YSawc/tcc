@@ -12,7 +12,8 @@ static void emit_function(Function *function) {
   printf("  mov rbp, rsp\n");
 }
 
-static void emit_prologue_text(void) { printf("  .text\n"); }
+static void emit_data(void) { printf("  .data\n"); }
+static void emit_text(void) { printf("  .text\n"); }
 
 static void emit_globals_data(Program *prog) {
   printf("  .data\n");
@@ -36,19 +37,29 @@ static void emit_out_function(Function *function) {
   printf("  ret\n");
 }
 
-static void emit_data() {
+static void emit() {
   token = tokenize();
   Program *prog = gen_program();
 
   if (prog->gVars)
     emit_globals_data(prog);
 
-  emit_prologue_text();
-
   // Variable created this phase, so assign each variable with offset.
   assign_var_offset(prog->func);
 
   for (Function *func = prog->func; func; func = func->next) {
+    emit_data();
+    for (Var *v = func->lVars; v; v = v->next) {
+      if (v->typ == typ_d_by) {
+        printf(".L.data.%d:\n", v->ln);
+        for (int i = 0; i < strlen(v->contents); i++) {
+          printf("  .byte %d\n", v->contents[i]);
+        }
+      }
+    }
+
+    emit_text();
+
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
     for (Var *v = func->lVars; v; v = v->next) {
@@ -70,7 +81,7 @@ static void emit_data() {
 
 static void gen_code() {
   emit_prologue();
-  emit_data();
+  emit();
 }
 
 int main(int argc, char **argv) {
