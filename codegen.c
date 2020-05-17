@@ -3,6 +3,7 @@
 static Var *lVars;
 static Var *gVars;
 static int conditional_c = 0;
+static Scope *scope;
 
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
@@ -54,6 +55,13 @@ static char *new_label(void) {
   return strndup(buf, t);
 }
 
+static void give_scope(Var *var) {
+  Scope *sc = calloc(1, sizeof(Scope));
+  sc->var = var;
+  sc->next = scope;
+  scope = sc;
+}
+
 static Var *new_l_var(char *nm, Type *ty) {
   if (!ty)
     error_at(token->str, "expected type, but not detected.");
@@ -65,7 +73,20 @@ static Var *new_l_var(char *nm, Type *ty) {
   var->nm = nm;
   var->is_local = true;
   lVars = var;
+
+  give_scope(var);
   return var;
+}
+
+static void new_g_var(Type *ty) {
+  char *nm = expect_ident();
+  expect(';');
+  Var *var = calloc(1, sizeof(Var));
+  var->next = gVars;
+  var->ty = ty;
+  var->nm = nm;
+  give_scope(var);
+  gVars = var;
 }
 
 static Var *new_arr_var(char *nm, int l, Type *ty) {
@@ -76,6 +97,8 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
     var->ty = ty_char_arr;
   else if (ty == ty_int)
     var->ty = ty_int_arr;
+  else
+    error_at(token->str, "not array type detected.");
   var->nm = nm;
   var->is_local = true;
   lVars = var;
@@ -91,26 +114,18 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
     if (l_i == l - 1)
       ret_v = tmp;
   }
+
+  give_scope(var);
   return ret_v;
 }
 
 // find variable scope of a whole
 static Var *find_var(Token *tok) {
-  for (Var *v = lVars; v; v = v->next)
+  for (Scope *s = scope; s; s = s->next) {
+    Var *v = s->var;
     if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
-
-  for (Var *v = gVars; v; v = v->next)
-    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
-      return v;
-  return NULL;
-}
-
-// find variable scope of local
-static Var *find_lvar(Token *tok) {
-  for (Var *v = lVars; v; v = v->next)
-    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
-      return v;
+  }
   return NULL;
 }
 
@@ -152,7 +167,7 @@ static Node *new_var_nd(Var *var) {
 
 static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
-  Var *var = find_lvar(tok);
+  Var *var = find_var(tok);
   if (var)
     error_at(tok->str, "multiple declaration.");
 
@@ -241,17 +256,6 @@ static void consume_typ(void) {
   }
 }
 
-static void new_g_var() {
-  expect_str("int");
-  char *nm = expect_ident();
-  expect(';');
-  Var *var = calloc(1, sizeof(Var));
-  var->next = gVars;
-  var->ty = ty_int;
-  var->nm = nm;
-  gVars = var;
-}
-
 static Function *fn() {
   lVars = NULL;
 
@@ -299,12 +303,18 @@ Program *gen_program(void) {
 
   // detect global functoin.
   while (!is_fn()) {
-    new_g_var();
+    Type *ty = look_type();
+    if (!ty)
+      error_at(token->str, "expected type, but not detected.");
+    consume_typ();
+    new_g_var(ty);
   }
 
   while (!at_eof()) {
+    Scope *sc = scope;
     fn_cur->next = fn();
     fn_cur = fn_cur->next;
+    scope = sc;
   }
 
   Program *prog = calloc(1, sizeof(Program));
@@ -397,10 +407,12 @@ static Node *stmt() {
     Node head = {};
     Node *cur = &head;
 
+    Scope *sc = scope;
     while (!consume("}")) {
       cur->next = stmt();
       cur = cur->next;
     }
+    scope = sc;
 
     Node *nd = new_nd(ND_BLOCK);
     nd->block = head.next;
@@ -541,10 +553,12 @@ static Node *primary_expr(void) {
       Node head = {};
       Node *cur = &head;
 
+      Scope *sc = scope;
       while (!consume("}")) {
         cur->next = stmt();
         cur = cur->next;
       }
+      scope = sc;
 
       expect(')');
       Node *nd = new_nd(ND_GNU_BLOCK);
@@ -643,15 +657,15 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
-    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR && nd->ty->kind != TY_D_BY)
+    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR &&
+        nd->ty->kind != TY_D_BY)
       load_64();
     return;
   case ND_ASSIGN:
     gen_var_addr(nd->lhs);
     code_gen(nd->rhs);
     store_val(nd->lhs->ty);
-    if (nd->lhs->ty->kind == TY_INT_ARR ||
-        nd->lhs->ty->kind == TY_CHAR_ARR)
+    if (nd->lhs->ty->kind == TY_INT_ARR || nd->lhs->ty->kind == TY_CHAR_ARR)
       printf("  add rsp, 8\n");
     return;
   case ND_ADDR:

@@ -107,6 +107,12 @@ struct Var {
   int ln; // label number
 };
 
+typedef struct Scope Scope;
+struct Scope {
+  Scope *next;
+  Var *var;
+};
+
 // AST node
 typedef enum {
   ND_NUM,       // Integer

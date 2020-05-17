@@ -154,4 +154,6 @@ assert 97 'int main() { char *s = "abc"; return s[0]; }'
 assert 98 'int main() { char *s = "abc"; return s[1]; }'
 assert 99 'int main() { char *s = "abc"; return s[2]; }'
 
+assert 3 'int main() { int x=2; { x=3; } return x; }'
+
 echo OK
