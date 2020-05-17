@@ -57,8 +57,8 @@ void typ_rev(Node *nd) {
   case ND_PTR_SUB:
   case ND_ASSIGN:
     nd->ty = nd->lhs->ty;
-    if (nd->lhs->var && nd->rhs->ty == ty_char)
-      nd->lhs->var = nd->rhs->var;
+    if (nd->lhs->v && nd->rhs->ty == ty_char)
+      nd->lhs->v = nd->rhs->v;
     return;
   case ND_ADDR:
     nd->ty = pointer_to(nd->lhs->ty);

@@ -110,7 +110,7 @@ struct Var {
 typedef struct Scope Scope;
 struct Scope {
   Scope *next;
-  Var *var;
+  Var *v;
 };
 
 // AST node
@@ -162,7 +162,7 @@ struct Node {
   // Block
   Node *block;
 
-  Var *var; // Variable
+  Var *v; // Variable
 
   long val;  // If kind is TK_NUM, its value
   char *str; // Token string
@@ -177,7 +177,7 @@ struct Function {
   Function *next;
   char *nm;
   Node *nd;
-  Var *lVars;
+  Var *lv;
   int stack_size;
   int args_c;
 };
@@ -185,7 +185,7 @@ struct Function {
 typedef struct Program Program;
 struct Program {
   Function *fn;
-  Var *gVars;
+  Var *gv;
 };
 
 Program *gen_program(void);

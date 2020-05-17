@@ -12,16 +12,16 @@ void set_current_fn(char *c) { fn_nm = c; }
 
 // Pushes the given node's address to the stack.
 static void gen_var_addr(Node *nd) {
-  Var *var = nd->var;
+  Var *v = nd->v;
   if (nd->kind == ND_REF) {
     code_gen(nd->lhs);
-  } else if (var->contents) {
-    printf("  push offset .L.data.%d\n", var->ln);
-  } else if (var->is_local) {
-    printf("  lea rax, [rbp-%d]\n", var->offset);
+  } else if (v->contents) {
+    printf("  push offset .L.data.%d\n", v->ln);
+  } else if (v->is_local) {
+    printf("  lea rax, [rbp-%d]\n", v->offset);
     printf("  push rax\n");
   } else {
-    printf("  push offset %s\n", var->nm);
+    printf("  push offset %s\n", v->nm);
   }
   return;
 }
@@ -55,9 +55,9 @@ static char *new_label(void) {
   return strndup(buf, t);
 }
 
-static void give_scope(Var *var) {
+static void give_scope(Var *v) {
   Scope *sc = calloc(1, sizeof(Scope));
-  sc->var = var;
+  sc->v = v;
   sc->next = scope;
   scope = sc;
 }
@@ -66,47 +66,47 @@ static Var *new_l_var(char *nm, Type *ty) {
   if (!ty)
     error_at(token->str, "expected type, but not detected.");
 
-  Var *var = calloc(1, sizeof(Var));
-  var->next = lVars;
-  var->ty = ty;
+  Var *v = calloc(1, sizeof(Var));
+  v->next = lVars;
+  v->ty = ty;
 
-  var->nm = nm;
-  var->is_local = true;
-  lVars = var;
+  v->nm = nm;
+  v->is_local = true;
+  lVars = v;
 
-  give_scope(var);
-  return var;
+  give_scope(v);
+  return v;
 }
 
 static void new_g_var(Type *ty) {
   char *nm = expect_ident();
   expect(';');
-  Var *var = calloc(1, sizeof(Var));
-  var->next = gVars;
-  var->ty = ty;
-  var->nm = nm;
-  give_scope(var);
-  gVars = var;
+  Var *v = calloc(1, sizeof(Var));
+  v->next = gVars;
+  v->ty = ty;
+  v->nm = nm;
+  give_scope(v);
+  gVars = v;
 }
 
 static Var *new_arr_var(char *nm, int l, Type *ty) {
   Var *ret_v;
-  Var *var = calloc(1, sizeof(Var));
-  var->next = lVars;
+  Var *v = calloc(1, sizeof(Var));
+  v->next = lVars;
   if (ty == ty_char)
-    var->ty = ty_char_arr;
+    v->ty = ty_char_arr;
   else if (ty == ty_int)
-    var->ty = ty_int_arr;
+    v->ty = ty_int_arr;
   else
     error_at(token->str, "not array type detected.");
-  var->nm = nm;
-  var->is_local = true;
-  lVars = var;
+  v->nm = nm;
+  v->is_local = true;
+  lVars = v;
 
   for (int l_i = 0; l_i < l; l_i++) {
     Var *tmp = calloc(1, sizeof(Var));
     tmp->next = lVars;
-    tmp->ty = var->ty;
+    tmp->ty = v->ty;
     tmp->nm = "";
     tmp->is_local = true;
     lVars = tmp;
@@ -115,14 +115,14 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
       ret_v = tmp;
   }
 
-  give_scope(var);
+  give_scope(v);
   return ret_v;
 }
 
 // find variable scope of a whole
 static Var *find_var(Token *tok) {
   for (Scope *s = scope; s; s = s->next) {
-    Var *v = s->var;
+    Var *v = s->v;
     if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
   }
@@ -154,30 +154,30 @@ static Node *new_num(long val) {
   return nd;
 }
 
-static Node *new_var_nd(Var *var) {
+static Node *new_var_nd(Var *v) {
   Node *nd = new_nd(ND_VAR);
-  nd->var = var;
-  nd->ty = var->ty;
-  nd->str = var->nm;
+  nd->v = v;
+  nd->ty = v->ty;
+  nd->str = v->nm;
 
-  if (var->ty->base)
-    nd->ty->base = var->ty->base;
+  if (v->ty->base)
+    nd->ty->base = v->ty->base;
   return nd;
 }
 
 static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
-  Var *var = find_var(tok);
-  if (var)
+  Var *v = find_var(tok);
+  if (v)
     error_at(tok->str, "multiple declaration.");
 
   if (consume("[")) {
     int l = expect_number();
     expect(']');
-    var = new_arr_var(tok->str, l, ty);
-    var->ty->base = ty;
+    v = new_arr_var(tok->str, l, ty);
+    v->ty->base = ty;
     Node *nd = new_nd(ND_NULL);
-    nd->var = var;
+    nd->v = v;
     return nd;
   }
 
@@ -187,20 +187,20 @@ static Node *expect_dec(Type *ty) {
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    var = new_l_var(consume_ident()->str, ty);
+    v = new_l_var(consume_ident()->str, ty);
     expect('=');
-    var->contents = token->str;
+    v->contents = token->str;
     token = token->next;
-    var->ln = conditional_c++;
-    var->ty->base = ty;
+    v->ln = conditional_c++;
+    v->ty->base = ty;
     return new_nd(ND_NULL);
   }
 
-  var = new_l_var(tok->str, ty);
+  v = new_l_var(tok->str, ty);
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
     return new_nd(ND_NULL);
-  return new_var_nd(var);
+  return new_var_nd(v);
 }
 
 static Node *phase_typ_rev(void);
@@ -290,7 +290,7 @@ static Function *fn() {
   fn->nm = fn_nm;
   fn->nd = head_nd.next;
   fn->args_c = args_c;
-  fn->lVars = lVars;
+  fn->lv= lVars;
   return fn;
 }
 
@@ -319,13 +319,13 @@ Program *gen_program(void) {
 
   Program *prog = calloc(1, sizeof(Program));
   prog->fn = head_fn.next;
-  prog->gVars = gVars;
+  prog->gv= gVars;
   return prog;
 }
 
 void assign_var_offset(Function *fn) {
   int i = 0;
-  for (Var *v = fn->lVars; v; v = v->next) {
+  for (Var *v = fn->lv; v; v = v->next) {
     // data byte not assigned offset but labeled in sectio of data.
     if (v->ty != ty_d_by) {
       i += v->ty->size;
@@ -339,7 +339,7 @@ void emit_rsp(Function *func) {
   int c = 0;
 
   // shift rsp counter counts of local variable.
-  for (Var *v = func->lVars; v; v = v->next)
+  for (Var *v = func->lv; v; v = v->next)
     if (v->ty != ty_d_by)
       c += v->ty->size;
 
@@ -349,12 +349,12 @@ void emit_rsp(Function *func) {
 }
 
 void emit_args(Function *fn) {
-  if (!fn->lVars)
+  if (!fn->lv)
     return;
 
   // Push arguments to the stack
   int i = 0;
-  Var *v = fn->lVars;
+  Var *v = fn->lv;
   for (int c = 0; c < fn->args_c; c++) {
     printf("  mov [rbp-%d], %s\n", v->offset, arg_regs[fn->args_c - i - 1]);
     v = v->next;
@@ -590,16 +590,16 @@ static Node *primary_expr(void) {
     }
 
     // find variable.
-    Var *var = find_var(tok);
-    if (var) {
+    Var *v = find_var(tok);
+    if (v) {
       if (consume("[")) {
-        Node *ref_nd = new_var_nd(var);
+        Node *ref_nd = new_var_nd(v);
         Node *add_nd = new_add(ref_nd, primary_expr());
         Node *uarray_nd = new_uarray(ND_REF, add_nd);
         expect(']');
         return uarray_nd;
       } else {
-        return new_var_nd(var);
+        return new_var_nd(v);
       }
     }
     error_at(token->str, "can't handle with undefined variable.");
@@ -611,10 +611,10 @@ static Node *primary_expr(void) {
     Token *tok = consume_ident();
     if (!tok)
       error_at(tok->str, "expected ident.");
-    Var *var = find_var(tok);
-    if (!var)
+    Var *v = find_var(tok);
+    if (!v)
       error_at(tok->str, "expected declaration variable.");
-    nd = new_num(var->ty->size);
+    nd = new_num(v->ty->size);
     expect(')');
     return nd;
   }
@@ -633,15 +633,15 @@ static Node *primary_expr(void) {
   if (token->kind == TK_STR) {
 
     // string should parsed as global variable because formed as data-section.
-    Var *var = calloc(1, sizeof(Var));
-    var->next = gVars;
-    var->nm = new_label();
-    var->ty = ty_char;
-    var->contents = token->str;
-    var->ln = conditional_c;
-    gVars = var;
+    Var *v = calloc(1, sizeof(Var));
+    v->next = gVars;
+    v->nm = new_label();
+    v->ty = ty_char;
+    v->contents = token->str;
+    v->ln = conditional_c;
+    gVars = v;
     token = token->next;
-    Node *nd = new_var_nd(var);
+    Node *nd = new_var_nd(v);
     return nd;
   }
 

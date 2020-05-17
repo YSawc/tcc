@@ -17,7 +17,7 @@ static void emit_text(void) { printf("  .text\n"); }
 
 static void emit_globals_data(Program *prog) {
   printf("  .data\n");
-  for (Var *var = prog->gVars; var; var = var->next) {
+  for (Var *var = prog->gv; var; var = var->next) {
     printf("%s:\n", var->nm);
 
     if (!var->contents) {
@@ -41,7 +41,7 @@ static void emit() {
   token = tokenize();
   Program *prog = gen_program();
 
-  if (prog->gVars)
+  if (prog->gv)
     emit_globals_data(prog);
 
   // Variable created this phase, so assign each variable with offset.
@@ -49,7 +49,7 @@ static void emit() {
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
     emit_data();
-    for (Var *v = fn->lVars; v; v = v->next) {
+    for (Var *v = fn->lv; v; v = v->next) {
       if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);
         for (int i = 0; i < strlen(v->contents); i++) {
@@ -62,7 +62,7 @@ static void emit() {
 
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
-    for (Var *v = fn->lVars; v; v = v->next) {
+    for (Var *v = fn->lv; v; v = v->next) {
       o += v->ty->size;
       v->offset = o;
     }
