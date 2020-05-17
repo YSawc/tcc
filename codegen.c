@@ -129,6 +129,13 @@ static Var *find_var(Token *tok) {
   return NULL;
 }
 
+static Var *find_l_var(Token *tok) {
+  for (Var *v = lVars; v; v = v->next)
+    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
+      return v;
+  return NULL;
+}
+
 static Node *new_nd(NodeKind kind) {
   Node *nd = calloc(1, sizeof(Node));
   nd->kind = kind;
@@ -167,9 +174,9 @@ static Node *new_var_nd(Var *v) {
 
 static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
-  Var *v = find_var(tok);
+  Var *v = find_l_var(tok);
   if (v)
-    error_at(tok->str, "multiple declaration.");
+    error_at(token->str, "multiple declaration.");
 
   if (consume("[")) {
     int l = expect_number();
@@ -290,7 +297,7 @@ static Function *fn() {
   fn->nm = fn_nm;
   fn->nd = head_nd.next;
   fn->args_c = args_c;
-  fn->lv= lVars;
+  fn->lv = lVars;
   return fn;
 }
 
@@ -319,7 +326,7 @@ Program *gen_program(void) {
 
   Program *prog = calloc(1, sizeof(Program));
   prog->fn = head_fn.next;
-  prog->gv= gVars;
+  prog->gv = gVars;
   return prog;
 }
 
@@ -610,10 +617,10 @@ static Node *primary_expr(void) {
     expect('(');
     Token *tok = consume_ident();
     if (!tok)
-      error_at(tok->str, "expected ident.");
+      error_at(token->str, "expected ident.");
     Var *v = find_var(tok);
     if (!v)
-      error_at(tok->str, "expected declaration variable.");
+      error_at(token->str, "expected declaration variable.");
     nd = new_num(v->ty->size);
     expect(')');
     return nd;
