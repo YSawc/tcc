@@ -97,9 +97,9 @@ void set_current_fn(char *c);
 typedef struct Var Var;
 struct Var {
   Var *next;
-  char *nm;    // Variable name
+  char *nm;      // Variable name
   int offset;    // Offset from RBP
-  Type *ty;     // type
+  Type *ty;      // type
   bool is_local; // true if local variable
 
   char *contents; // stirng contents

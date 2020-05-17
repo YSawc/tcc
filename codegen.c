@@ -54,7 +54,7 @@ static char *new_label(void) {
   return strndup(buf, t);
 }
 
-static Var *new_lvar(char *nm, Type *ty) {
+static Var *new_l_var(char *nm, Type *ty) {
   if (!ty)
     error_at(token->str, "expected type, but not detected.");
 
@@ -172,7 +172,7 @@ static Node *expect_dec(Type *ty) {
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    var = new_lvar(consume_ident()->str, ty);
+    var = new_l_var(consume_ident()->str, ty);
     expect('=');
     var->contents = token->str;
     token = token->next;
@@ -181,7 +181,7 @@ static Node *expect_dec(Type *ty) {
     return new_nd(ND_NULL);
   }
 
-  var = new_lvar(tok->str, ty);
+  var = new_l_var(tok->str, ty);
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
     return new_nd(ND_NULL);
@@ -241,7 +241,7 @@ static void consume_typ(void) {
   }
 }
 
-static void global_var() {
+static void new_g_var() {
   expect_str("int");
   char *nm = expect_ident();
   expect(';');
@@ -267,12 +267,12 @@ static Function *fn() {
   if (!consume(")")) {
     Type *ty = look_type();
     consume_typ();
-    new_lvar(expect_ident(), ty);
+    new_l_var(expect_ident(), ty);
     args_c++;
     while (consume(",")) {
       Type *ty = look_type();
       consume_typ();
-      new_lvar(expect_ident(), ty);
+      new_l_var(expect_ident(), ty);
       args_c++;
     }
     expect(')');
@@ -299,7 +299,7 @@ Program *gen_program(void) {
 
   // detect global functoin.
   while (!is_fn()) {
-    global_var();
+    new_g_var();
   }
 
   while (!at_eof()) {
