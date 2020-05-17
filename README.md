@@ -7,22 +7,27 @@ How to run test: `make test`
 ## Roadmap
 - main
   - [x] arithmetic operations
-  - [ ] type suppoprt
+  - [x] type suppoprt
     - [x] char
     - [x] int
-    - [ ] string
-  - [x] arrays
-  - [x] oomparison operator
+    - [x] string
+  - [x] variable
+    - [x] gloval variable
+    - [x] local variable
+  - [x] type adder and checker (minimal)
+  - [x] array
+    - [x] int
+    - [x] string
+  - [x] comparison operator
   - [x] call function and definition
   - [x] if, while and for statements
   - [x] local assignment
   - [x] char literal
   - [x] pointer and reference operator
-  - [ ] struct
-  - [ ] gnu expression statements
+  - [x] gnu expression statements
+  - [ ] structure
   - [ ] 'hello world' with scratch
-  - [ ] scratch libraly
-  - [ ] ...
+  - [ ] scratch some library
 - other
   - [ ] test in shell ( now only support run test with shell script. )
   - [ ] construct environment with docker
