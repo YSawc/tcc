@@ -101,6 +101,7 @@ Token *read_typed_str(Token *cur, char *p) {
   tok->str = malloc(len);
   memcpy(tok->str, buf, len);
   tok->len = p - q;
+  cur->next = tok;
   return tok;
 }
 

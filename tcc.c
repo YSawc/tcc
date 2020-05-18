@@ -53,7 +53,7 @@ static void emit() {
     for (Var *v = fn->lv; v; v = v->next) {
       if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);
-        for (int i = 0; i < strlen(v->contents); i++) {
+        for (int i = 0; i < v->len; i++) {
           printf("  .byte %d\n", v->contents[i]);
         }
       }

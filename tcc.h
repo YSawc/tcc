@@ -101,6 +101,7 @@ struct Var {
   int offset;    // Offset from RBP
   Type *ty;      // type
   bool is_local; // true if local variable
+  int len;       // length
 
   char *contents; // stirng contents
 

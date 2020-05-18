@@ -180,6 +180,7 @@ static Node *expect_dec(Type *ty) {
     Var *v = new_l_var(consume_ident()->str, ty);
     expect('=');
     v->contents = token->str;
+    v->len = token->len;
     token = token->next;
     v->ln = conditional_c++;
     v->ty->base = ty;
