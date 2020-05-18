@@ -130,9 +130,10 @@ static Var *find_var(Token *tok) {
 }
 
 static Var *find_l_var(Token *tok) {
-  for (Var *v = lVars; v; v = v->next)
+  for (Var *v = lVars; v; v = v->next) {
     if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
+  }
   return NULL;
 }
 
@@ -174,14 +175,11 @@ static Node *new_var_nd(Var *v) {
 
 static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
-  Var *v = find_l_var(tok);
-  if (v)
-    error_at(token->str, "multiple declaration.");
 
   if (consume("[")) {
     int l = expect_number();
     expect(']');
-    v = new_arr_var(tok->str, l, ty);
+    Var *v = new_arr_var(tok->str, l, ty);
     v->ty->base = ty;
     Node *nd = new_nd(ND_NULL);
     nd->v = v;
@@ -194,7 +192,7 @@ static Node *expect_dec(Type *ty) {
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    v = new_l_var(consume_ident()->str, ty);
+    Var *v = new_l_var(consume_ident()->str, ty);
     expect('=');
     v->contents = token->str;
     token = token->next;
@@ -203,7 +201,7 @@ static Node *expect_dec(Type *ty) {
     return new_nd(ND_NULL);
   }
 
-  v = new_l_var(tok->str, ty);
+  Var *v = new_l_var(tok->str, ty);
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
     return new_nd(ND_NULL);

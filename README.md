@@ -5,7 +5,7 @@
 How to run test: `make test`
 
 ## Roadmap
-- main
+- main task
   - [x] arithmetic operations
   - [x] type suppoprt
     - [x] char
@@ -19,6 +19,7 @@ How to run test: `make test`
     - [x] int
     - [x] string
   - [x] comparison operator
+  - [x] block handle in the same function
   - [x] call function and definition
   - [x] if, while and for statements
   - [x] local assignment
@@ -28,6 +29,6 @@ How to run test: `make test`
   - [ ] structure
   - [ ] 'hello world' with scratch
   - [ ] scratch some library
-- other
+- other task
   - [ ] test in shell ( now only support run test with shell script. )
   - [ ] construct environment with docker

@@ -12,7 +12,9 @@ void error_at(char *loc, char *fmt, ...) {
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
   } else {
-    printf("expected: %s.", loc);
+    fprintf(stderr, "segmentation fault occured when analizing token of %s.", loc);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
   }
   exit(1);
 }

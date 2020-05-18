@@ -156,6 +156,8 @@ assert 98 'int main() { char *s = "abc"; return s[1]; }'
 assert 99 'int main() { char *s = "abc"; return s[2]; }'
 
 assert 3 'int main() { int x=2; { x=3; } return x; }'
+assert 2 'int main() { int x=2; { int x=3; } return x; }'
+assert 2 'int main() { int x=2; { int x=3; } { int y=4; return x; }}'
 
 assert 3 'int i; int main() { int i = 3; return i; }'
 assert 1 'int c; int main() { char c; return sizeof(c); }'
