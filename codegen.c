@@ -48,13 +48,6 @@ static void store_val(Type *ty) {
   printf("  push rdi\n");
 }
 
-static char *new_label(void) {
-  int t = 20;
-  char buf[t];
-  sprintf(buf, ".L.data.%d", conditional_c++);
-  return strndup(buf, t);
-}
-
 static void give_scope(Var *v) {
   Scope *sc = calloc(1, sizeof(Scope));
   sc->v = v;
@@ -632,7 +625,6 @@ static Node *primary_expr(void) {
     // string should parsed as global variable because formed as data-section.
     Var *v = calloc(1, sizeof(Var));
     v->next = gVars;
-    v->nm = new_label();
     v->ty = ty_char;
     v->contents = token->str;
     v->ln = conditional_c;

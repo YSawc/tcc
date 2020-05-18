@@ -163,4 +163,18 @@ assert 3 'int i; int main() { int i = 3; return i; }'
 assert 1 'int c; int main() { char c; return sizeof(c); }'
 assert 1 'int c; int main() { int c; return fn(); } int fn() { char c; return sizeof(c); }'
 
+assert 7 'int main() { char *s="\a"; return s[0]; }'
+assert 8 'int main() { char *s="\b"; return s[0]; }'
+assert 9 'int main() { char *s="\t"; return s[0]; }'
+assert 10 'int main() { char *s="\n"; return s[0]; }'
+assert 11 'int main() { char *s="\v"; return s[0]; }'
+assert 12 'int main() { char *s="\f"; return s[0]; }'
+assert 13 'int main() { char *s="\r"; return s[0]; }'
+assert 27 'int main() { char *s="\e"; return s[0]; }'
+
+assert 99 'int main() { char *s = "\c"; return s[0]; }'
+assert 100 'int main() { char *s = "\d"; return s[0]; }'
+assert 103 'int main() { char *s = "\g"; return s[0]; }'
+assert 48 'int main() { char *s = "0"; return s[0]; }'
+
 echo OK

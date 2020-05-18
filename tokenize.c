@@ -54,6 +54,56 @@ static Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   return tok;
 }
 
+static char get_escape_char(char c) {
+  switch (c) {
+  case 'a':
+    return '\a';
+  case 'b':
+    return '\b';
+  case 't':
+    return '\t';
+  case 'n':
+    return '\n';
+  case 'v':
+    return '\v';
+  case 'f':
+    return '\f';
+  case 'r':
+    return '\r';
+  case 'e':
+    return 27;
+  case '0':
+    return 0;
+  default:
+    return c;
+  }
+}
+
+Token *read_typed_str(Token *cur, char *p) {
+  int len = 0;
+  char *q = p;
+  char buf[256];
+  while (*p && *p != '"') {
+    if (!*p) {
+      error_at(cur->str, "string literal must close with \".");
+    }
+    if (*p == '\0')
+      error_at(cur->str, "unclosed string literal");
+
+    if (*p == '\\') {
+      p++;
+      buf[len++] = get_escape_char(*p++);
+    } else {
+      buf[len++] = *p++;
+    }
+  }
+  Token *tok = new_token(TK_STR, cur, NULL, p - q);
+  tok->str = malloc(len);
+  memcpy(tok->str, buf, len);
+  tok->len = p - q;
+  return tok;
+}
+
 Token *tokenize(void) {
   char *p = user_input;
   Token head = {};
@@ -79,20 +129,8 @@ Token *tokenize(void) {
 
     if (*p == '"') {
       p++;
-      char *q = p;
-      int len = 0;
-      while (*p && *p != '"') {
-        if (!*p) {
-          fprintf(stderr, "string literal must close with \".");
-          exit(1);
-        }
-        p++;
-        len++;
-      }
-      cur = new_token(TK_STR, cur, q, p - q);
-      cur->str = strndup(q, p - q);
-      cur->len = p - q;
-      p++;
+      cur = read_typed_str(cur, p);
+      p += cur->len + 1;
       continue;
     };
 
