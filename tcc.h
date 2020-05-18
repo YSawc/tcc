@@ -18,7 +18,7 @@ void error_at(char *loc, char *fmt, ...);
 bool startswith(char *p, char *q);
 void expect(char op);
 long expect_number(void);
-char *strTypeOfVar(char *s, int l);
+char *strTypeOfVar(char *s);
 char *strtoalpha(char *s);
 int lenIsDigit(char *s);
 

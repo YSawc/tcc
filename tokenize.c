@@ -117,7 +117,7 @@ Token *tokenize(void) {
     for (int i = 0; i < sizeof(mSym) / sizeof(*mSym); i++) {
       int tmp_len = strlen(mSym[i]);
       if (startswith(p, mSym[i])) {
-        cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
+        cur = new_token(TK_RESERVED, cur, strTypeOfVar(mSym[i]), tmp_len);
         p += tmp_len;
         continue;
       }
@@ -136,7 +136,7 @@ Token *tokenize(void) {
     for (int i = 0; i < sizeof(mSt) / sizeof(*mSt); i++) {
       int tmp_len = strlen(mSt[i]);
       if (startswith(p, mSt[i])) {
-        cur = new_token(TK_RESERVED, cur, strTypeOfVar(p, tmp_len), tmp_len);
+        cur = new_token(TK_RESERVED, cur, strTypeOfVar(mSt[i]), tmp_len);
         p += tmp_len;
         continue;
       }
@@ -153,7 +153,7 @@ Token *tokenize(void) {
     // Integer literal
     if (isdigit(*p)) {
       int l = lenIsDigit(p);
-      cur = new_token(TK_NUM, cur, strTypeOfVar(p, l), l);
+      cur = new_token(TK_NUM, cur, strTypeOfVar(p), l);
       char *q = p;
       cur->val = strtol(p, &p, 10);
       cur->len = p - q;

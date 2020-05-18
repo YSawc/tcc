@@ -12,7 +12,7 @@ void error_at(char *loc, char *fmt, ...) {
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
   } else {
-    fprintf(stderr, "segmentation fault occured when analizing token of %s.", loc);
+    fprintf(stderr, "segmentation fault occured when analizing token of '%s'.", loc);
     vfprintf(stderr, fmt, ap);
     fprintf(stderr, "\n");
   }
@@ -35,7 +35,8 @@ long expect_number(void) {
   return val;
 }
 
-char *strTypeOfVar(char *s, int l) {
+char *strTypeOfVar(char *s) {
+  int l = strlen(s);
   char *tmp = malloc(l);
   for (int i = 0; i < l; i++) {
     tmp[i] = s[i];

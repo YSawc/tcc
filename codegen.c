@@ -129,14 +129,6 @@ static Var *find_var(Token *tok) {
   return NULL;
 }
 
-static Var *find_l_var(Token *tok) {
-  for (Var *v = lVars; v; v = v->next) {
-    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
-      return v;
-  }
-  return NULL;
-}
-
 static Node *new_nd(NodeKind kind) {
   Node *nd = calloc(1, sizeof(Node));
   nd->kind = kind;
