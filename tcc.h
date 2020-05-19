@@ -14,6 +14,8 @@ typedef struct Node Node;
 // util.c
 //
 
+// void error_at(char *loc, char *fmt, va_list ap);
+void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 bool startswith(char *p, char *q);
 void expect(char op);
@@ -53,6 +55,7 @@ char *expect_ident(void);
 Token *consume_ident(void);
 Token *tokenize(void);
 
+extern char *filename;
 extern char *user_input;
 extern Token *token;
 

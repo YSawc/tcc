@@ -1,7 +1,5 @@
 #include "tcc.h"
 
-/* Node *nd; */
-
 static void emit_prologue() { printf("  .intel_syntax noprefix\n"); }
 
 static void emit_fn(Function *fn) {
@@ -54,7 +52,8 @@ static void emit() {
       if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);
         for (int i = 0; i < v->len; i++) {
-          printf("  .byte %d\n", v->contents[i]);
+          if (v->contents[i] != '\0')
+            printf("  .byte %d\n", v->contents[i]);
         }
       }
     }
@@ -85,12 +84,35 @@ static void gen_code() {
   emit();
 }
 
+// Returns the contents of a given file.
+static char *read_file(char *path) {
+  // Open and read the file.
+  FILE *fp = fopen(path, "r");
+  if (!fp)
+    error("cannot open %s: %s", path, strerror(errno));
+
+  int filemax = 10 * 1024 * 1024;
+  char *buf = malloc(filemax);
+  int size = fread(buf, 1, filemax - 2, fp);
+  if (!feof(fp))
+    error("%s: file too large", path);
+
+  // Make sure that the string ends with "\n\0".
+  if (size == 0 || buf[size - 1] != '\n')
+    buf[size++] = '\n';
+  buf[size] = '\0';
+  return buf;
+}
+
 int main(int argc, char **argv) {
   if (argc != 2) {
     fprintf(stderr, "%s: invalid number of arguments\n", argv[0]);
     return 1;
   }
-  user_input = argv[1];
+  /* user_input = argv[1]; */
+  filename = argv[1];
+  /* user_input = read_file(argv[1]); */
+  user_input = read_file(filename);
 
   gen_code();
 

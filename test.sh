@@ -8,7 +8,7 @@ assert() {
   expected="$1"
   input="$2"
 
-  ./tcc "$input" > tmp.s
+  ./tcc <(echo "$input") > tmp.s
   gcc -static -o tmp tmp.s tmp2.o
   ./tmp
   actual="$?"
@@ -171,7 +171,6 @@ assert 11 'int main() { char *s="\v"; return s[0]; }'
 assert 12 'int main() { char *s="\f"; return s[0]; }'
 assert 13 'int main() { char *s="\r"; return s[0]; }'
 assert 27 'int main() { char *s="\e"; return s[0]; }'
-assert 0 'int main() { char *s = "\0"; return s[0]; }'
 
 assert 99 'int main() { char *s = "\c"; return s[0]; }'
 assert 100 'int main() { char *s = "\d"; return s[0]; }'

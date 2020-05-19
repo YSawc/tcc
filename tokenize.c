@@ -1,5 +1,6 @@
 #include "tcc.h"
 
+char *filename;
 char *user_input;
 Token *token;
 
