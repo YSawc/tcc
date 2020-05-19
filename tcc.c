@@ -1,6 +1,6 @@
 #include "tcc.h"
 
-Node *nd;
+/* Node *nd; */
 
 static void emit_prologue() { printf("  .intel_syntax noprefix\n"); }
 

@@ -523,7 +523,6 @@ static Node *unary() {
     return new_uarray(ND_REF, unary());
   } else if (consume("&")) {
     return new_uarray(ND_ADDR, unary());
-    return nd;
   } else {
     return primary_expr();
   }
@@ -556,7 +555,7 @@ static Node *primary_expr(void) {
       nd->block = head.next;
       return nd;
     } else {
-      nd = add();
+      Node *nd = add();
       expect(')');
       return nd;
     }

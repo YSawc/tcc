@@ -195,5 +195,3 @@ void emit_rsp(Function *fn);
 void emit_args(Function *fn);
 
 void code_gen(Node *nd);
-
-extern Node *nd;
