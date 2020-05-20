@@ -91,6 +91,12 @@ void typ_rev(Node *nd);
 bool lr_if_or(Node *nd, Kind k);
 
 //
+// parse.c
+//
+
+extern char *fn_nm;
+
+//
 // codegen.c
 //
 
