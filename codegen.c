@@ -533,6 +533,7 @@ static Node *unary() {
 /*              | Ident ("()")? */
 /*              | Ident */
 /*              | Ident "[" num "]" */
+/*              | ImmString "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
 /*              | "\"" {contents} "\"" */
@@ -621,6 +622,14 @@ static Node *primary_expr(void) {
 
   // case of string literal.
   if (token->kind == TK_STR) {
+    // case of imm variable
+    if (startswith(token->next->str, "[")) {
+      Token *t = token;
+      token = token->next->next;
+      int i = expect_number();
+      expect(']');
+      return new_num(t->str[i]);
+    }
 
     // string should parsed as global variable because formed as data-section.
     Var *v = calloc(1, sizeof(Var));

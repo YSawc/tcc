@@ -177,4 +177,13 @@ assert 100 'int main() { char *s = "\d"; return s[0]; }'
 assert 103 'int main() { char *s = "\g"; return s[0]; }'
 assert 48 'int main() { char *s = "0"; return s[0]; }'
 
+assert 7 'int main() { return "\a"[0]; }'
+assert 8 'int main() { return "\b"[0]; }'
+assert 7 'int main() { return "\a\b"[0]; }'
+assert 8 'int main() { return "\a\b"[1]; }'
+
+assert 97 'int main() { return "a\bc"[0]; }'
+assert 8 'int main() { return "a\bc"[1]; }'
+assert 99 'int main() { return "a\bc"[2]; }'
+
 echo OK
