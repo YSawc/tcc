@@ -164,6 +164,7 @@ static Node *relational(void);
 static Node *add(void);
 static Node *mul(void);
 static Node *unary(void);
+static Node *idx(void);
 static Node *primary_expr(void);
 
 static Node *func_args() {
@@ -486,20 +487,33 @@ static Node *unary() {
   } else if (consume("&")) {
     return new_uarray(ND_ADDR, unary());
   } else {
-    return primary_expr();
+    return idx();
   }
+}
+
+/* idx = primary "[" num "]" */
+static Node *idx() {
+  Node *nd = primary_expr();
+
+  if (consume("[")) {
+    Node *add_nd = new_add(nd, primary_expr());
+    Node *nd = new_uarray(ND_REF, add_nd);
+    expect(']');
+    return nd;
+  }
+
+  return nd;
 }
 
 /* primary_expr = NUM */
 /*              | "(" "{" (stmt)* "}" ")" */
 /*              | Ident ("()")? */
 /*              | Ident */
-/*              | Ident "[" num "]" */
 /*              | ImmString "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
 /*              | "\"" {contents} "\"" */
-static Node *primary_expr(void) {
+static Node *primary_expr() {
   if (consume("(")) {
     if (consume("{")) {
       // read gnu statement.
@@ -544,18 +558,9 @@ static Node *primary_expr(void) {
 
     // find variable.
     Var *v = find_var(tok);
-    if (v) {
-      if (consume("[")) {
-        Node *ref_nd = new_var_nd(v);
-        Node *add_nd = new_add(ref_nd, primary_expr());
-        Node *uarray_nd = new_uarray(ND_REF, add_nd);
-        expect(']');
-        return uarray_nd;
-      } else {
-        return new_var_nd(v);
-      }
-    }
-    error_at(token->str, "can't handle with undefined variable.");
+    if (!v)
+      error_at(token->str, "can't handle with undefined variable.");
+    return new_var_nd(v);
   }
 
   if (consume("sizeof")) {
@@ -584,25 +589,17 @@ static Node *primary_expr(void) {
 
   // case of string literal.
   if (token->kind == TK_STR) {
-    // case of imm variable
-    if (startswith(token->next->str, "[")) {
-      Token *t = token;
-      token = token->next->next;
-      int i = expect_number();
-      expect(']');
-      return new_num(t->str[i]);
-    }
-
     // string should parsed as global variable because formed as data-section.
     Var *v = calloc(1, sizeof(Var));
     v->next = gVars;
-    v->ty = ty_char;
+    v->ty = ty_d_by;
+    v->ty->base = ty_d_by;
+    v->len = strlen(token->str);
     v->contents = token->str;
-    v->ln = conditional_c;
-    gVars = v;
+    v->ln = conditional_c++;
+    lVars = v;
     token = token->next;
-    Node *nd = new_var_nd(v);
-    return nd;
+    return new_var_nd(v);
   }
 
   return new_num(expect_number());

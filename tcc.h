@@ -180,6 +180,8 @@ struct Node {
   Type *ty; // type of node.
 
   int ln; // label number
+
+  char *contents; // label number
 };
 
 typedef struct Function Function;
