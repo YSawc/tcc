@@ -26,8 +26,10 @@ How to run test: `make test`
   - [x] char literal
   - [x] pointer and reference operator
   - [x] gnu expression statements
+  - [ ] 'hello world'
+    - [x] 'hello world' with static library
+    - [ ] 'hello world' with scratch
   - [ ] structure
-  - [ ] 'hello world' with scratch
   - [ ] scratch some library
 - other task
   - [ ] test in shell ( now only support run test with shell script. )
