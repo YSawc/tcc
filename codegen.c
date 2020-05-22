@@ -57,8 +57,6 @@ void code_gen(Node *nd) {
     gen_var_addr(nd->lhs);
     code_gen(nd->rhs);
     store_val(nd->lhs->ty);
-    if (nd->lhs->ty->kind == TY_INT_ARR || nd->lhs->ty->kind == TY_CHAR_ARR)
-      printf("  add rsp, 8\n");
     return;
   case ND_ADDR:
     gen_var_addr(nd->lhs);
@@ -136,6 +134,10 @@ void code_gen(Node *nd) {
   case ND_BLOCK:
     for (Node *n = nd->block; n; n = n->next)
       code_gen(n);
+    return;
+  case ND_EXPR:
+    code_gen(nd->lhs);
+    printf("  add rsp, 8\n");
     return;
   case ND_RETURN:
     code_gen(nd->lhs);

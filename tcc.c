@@ -1,22 +1,22 @@
 #include "tcc.h"
 
-static void emit_prologue() { printf("  .intel_syntax noprefix\n"); }
+static void emit_prologue() { printf(".intel_syntax noprefix\n"); }
 
 static void emit_fn(Function *fn) {
   char *fn_nm = fn->nm;
-  printf("  .global %s\n", fn_nm);
+  printf(".global %s\n", fn_nm);
   printf("%s:\n", fn_nm);
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
 }
 
-static void emit_data(void) { printf("  .data\n"); }
-static void emit_text(void) { printf("  .text\n"); }
+static void emit_data(void) { printf(".data\n"); }
+static void emit_text(void) { printf(".text\n"); }
 
 static void emit_globals_data(Program *prog) {
   if (!prog->gv)
     return;
-  printf("  .data\n");
+  printf(".data\n");
   for (Var *var = prog->gv; var; var = var->next) {
     printf("%s:\n", var->nm);
 

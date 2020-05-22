@@ -148,6 +148,7 @@ typedef enum {
   ND_ASSIGN,    // =
   ND_GNU_BLOCK, // ({})
   ND_BLOCK,     // { }
+  ND_EXPR,      // statement expression
   ND_NULL,      // null
 } NodeKind;
 

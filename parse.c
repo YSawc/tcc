@@ -120,6 +120,23 @@ static Node *new_var_nd(Var *v) {
   return nd;
 }
 
+static Node *new_expr(Node *lhs) {
+  Node *nd = new_nd(ND_EXPR);
+  nd->lhs = lhs;
+  return nd;
+}
+
+static Node *phase_typ_rev(void);
+static Node *stmt(void);
+static Node *assign(void);
+static Node *equality(void);
+static Node *relational(void);
+static Node *add(void);
+static Node *mul(void);
+static Node *unary(void);
+static Node *idx(void);
+static Node *primary_expr(void);
+
 static Node *expect_dec(Type *ty) {
   Token *tok = consume_ident();
 
@@ -153,19 +170,11 @@ static Node *expect_dec(Type *ty) {
   // In this case, it only declared but not assigned.
   if (startswith(token->str, ";"))
     return new_nd(ND_NULL);
-  return new_var_nd(v);
-}
+  expect('=');
+  Node *nd = new_binary(ND_ASSIGN, new_var_nd(v), add());
 
-static Node *phase_typ_rev(void);
-static Node *stmt(void);
-static Node *assign(void);
-static Node *equality(void);
-static Node *relational(void);
-static Node *add(void);
-static Node *mul(void);
-static Node *unary(void);
-static Node *idx(void);
-static Node *primary_expr(void);
+  return new_expr(nd);
+}
 
 static Node *func_args() {
   if (consume(")"))
@@ -297,7 +306,7 @@ void emit_rsp(Function *func) {
     if (v->ty != ty_d_by)
       c += v->ty->size;
 
-  // rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
+  // sub rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
   c = ((c + 8 - 1) / 8) * 8;
   printf("  sub rsp, %d\n", c);
 }
@@ -373,7 +382,15 @@ static Node *stmt() {
     return nd;
   }
 
-  Node *nd = assign();
+  Type *ty = look_type();
+  if (ty) {
+    consume_typ();
+    Node *nd = expect_dec(ty);
+    expect(';');
+    return nd;
+  }
+
+  Node *nd = new_expr(assign());
   expect(';');
   return nd;
 }
@@ -538,12 +555,6 @@ static Node *primary_expr() {
     }
   }
 
-  Type *ty = look_type();
-  if (ty) {
-    consume_typ();
-    return expect_dec(ty);
-  }
-
   Token *tok = consume_ident();
 
   if (tok) {
@@ -591,7 +602,7 @@ static Node *primary_expr() {
   if (token->kind == TK_STR) {
     // string should parsed as global variable because formed as data-section.
     Var *v = calloc(1, sizeof(Var));
-    v->next = gVars;
+    v->next = lVars;
     v->ty = ty_d_by;
     v->ty->base = ty_d_by;
     v->len = strlen(token->str);
