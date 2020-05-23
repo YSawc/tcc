@@ -99,7 +99,7 @@ Token *read_typed_str(Token *cur, char *p) {
     }
   }
   Token *tok = new_token(TK_STR, cur, NULL, p - q);
-  tok->str = malloc(len);
+  tok->str = malloc(len+1);
   memcpy(tok->str, buf, len);
   tok->len = p - q;
   cur->next = tok;

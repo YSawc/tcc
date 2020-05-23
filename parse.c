@@ -545,6 +545,9 @@ static Node *primary_expr() {
       scope = sc;
 
       expect(')');
+      if (cur->kind != ND_EXPR)
+        error("stmt expr returning void is not supported");
+      memcpy(cur, cur->lhs, sizeof(Node));
       Node *nd = new_nd(ND_GNU_BLOCK);
       nd->block = head.next;
       return nd;
@@ -605,7 +608,7 @@ static Node *primary_expr() {
     v->next = lVars;
     v->ty = ty_d_by;
     v->ty->base = ty_d_by;
-    v->len = strlen(token->str);
+    v->len = token->len + 1;
     v->contents = token->str;
     v->ln = conditional_c++;
     lVars = v;

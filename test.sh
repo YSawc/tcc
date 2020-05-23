@@ -182,4 +182,8 @@ assert 97 'int main() { return "a\bc"[0]; }'
 assert 8 'int main() { return "a\bc"[1]; }'
 assert 99 'int main() { return "a\bc"[2]; }'
 
+assert 0 'int main() { return ({ 0; }); }'
+assert 2 'int main() { return ({ 0; 1; 2; }); }'
+assert 1 'int main() { ({ 0; return 1; 2; }); return 3; }'
+
 echo OK

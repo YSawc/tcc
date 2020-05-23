@@ -25,7 +25,7 @@ static void emit_globals_data(Program *prog) {
       continue;
     }
 
-    for (int i = 0; i < strlen(var->contents); i++)
+    for (int i = 0; i < var->len; i++)
       printf("  .byte %d\n", var->contents[i]);
   }
 }
@@ -52,8 +52,7 @@ static void emit() {
       if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);
         for (int i = 0; i < v->len; i++) {
-          if (v->contents[i] != '\0')
-            printf("  .byte %d\n", v->contents[i]);
+          printf("  .byte %d\n", v->contents[i]);
         }
       }
     }
