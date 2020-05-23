@@ -7,15 +7,20 @@ static void gen_var_addr(Node *nd) {
   Var *v = nd->v;
   if (nd->kind == ND_REF) {
     code_gen(nd->lhs);
-  } else if (v->contents) {
-    printf("  lea rax, [rbp-%d]\n", v->offset);
-    printf("  push rax\n");
-    printf("  push offset .L.data.%d\n", v->ln);
   } else if (v->is_local) {
-    printf("  lea rax, [rbp-%d]\n", v->offset);
-    printf("  push rax\n");
+    if (v->contents) {
+      printf("  lea rax, [rbp-%d]\n", v->offset);
+      printf("  push rax\n");
+      printf("  push offset .L.data.%d\n", v->ln);
+    } else {
+      printf("  lea rax, [rbp-%d]\n", v->offset);
+      printf("  push rax\n");
+    }
   } else {
-    printf("  push offset %s\n", v->nm);
+    if (v->ty == ty_int)
+      printf("  push offset %s\n", v->nm);
+    else if (v->ty == ty_d_by)
+      printf("  push offset .L.data.%d\n", v->offset);
   }
   return;
 }
@@ -65,7 +70,7 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
-    if (nd->ty->size == 1)
+    if (nd->ty == ty_char || nd->ty == ty_d_by)
       load_8();
     else
       load_64();

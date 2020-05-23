@@ -16,17 +16,15 @@ static void emit_text(void) { printf(".text\n"); }
 static void emit_globals_data(Program *prog) {
   if (!prog->gv)
     return;
-  printf(".data\n");
-  for (Var *var = prog->gv; var; var = var->next) {
-    printf("%s:\n", var->nm);
-
-    if (!var->contents) {
-      printf("  .zero %d\n", var->ty->size);
-      continue;
+  for (Var *v = prog->gv; v; v = v->next) {
+    if (v->ty == ty_int) {
+      printf("%s:\n", v->nm);
+      printf("  .zero %d\n", v->ty->size);
+    } else if (v->contents) {
+      printf(".L.data.%d:\n", v->offset);
+      for (int i = 0; i < v->len; i++)
+        printf("  .byte %d\n", v->contents[i]);
     }
-
-    for (int i = 0; i < var->len; i++)
-      printf("  .byte %d\n", var->contents[i]);
   }
 }
 
@@ -41,13 +39,13 @@ static void emit() {
   token = tokenize();
   Program *prog = gen_program();
 
+  emit_data();
   emit_globals_data(prog);
 
   // Variable created this phase, so assign each variable with offset.
   assign_var_offset(prog->fn);
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
-    emit_data();
     for (Var *v = fn->lv; v; v = v->next) {
       if (v->ty == ty_d_by) {
         printf(".L.data.%d:\n", v->ln);

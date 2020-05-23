@@ -176,19 +176,19 @@ static Node *expect_dec(Type *ty) {
 
   Var *v = new_l_var(tok->str, ty);
   // In this case, it only declared but not assigned.
-  if (startswith(token->str, ";"))
-    return new_nd(ND_NULL);
-  expect('=');
-  Node *nd = new_binary(ND_ASSIGN, new_var_nd(v), add());
+  if (consume("=")) {
+    Node *nd = new_binary(ND_ASSIGN, new_var_nd(v), add());
+    return new_expr(nd);
+  }
 
-  return new_expr(nd);
+  return new_nd(ND_NULL);
 }
 
 static Node *func_args() {
   if (consume(")"))
     return NULL;
 
-  Node *head = add();
+  Node *head = equality();
   Node *cur = head;
   while (consume(",")) {
     cur->next = add();
@@ -249,11 +249,11 @@ static Function *fn() {
   expect('(');
   if (!consume(")")) {
     Type *ty = expect_ty();
-    new_l_var(expect_ident(), ty);
+    expect_dec(ty);
     args_c++;
     while (consume(",")) {
       Type *ty = expect_ty();
-      new_l_var(expect_ident(), ty);
+      expect_dec(ty);
       args_c++;
     }
     expect(')');
@@ -621,13 +621,13 @@ static Node *primary_expr() {
   if (token->kind == TK_STR) {
     // string should parsed as global variable because formed as data-section.
     Var *v = calloc(1, sizeof(Var));
-    v->next = lVars;
+    v->next = gVars;
     v->ty = ty_d_by;
     v->ty->base = ty_d_by;
     v->len = token->len + 1;
     v->contents = token->str;
     v->ln = conditional_c++;
-    lVars = v;
+    gVars = v;
     token = token->next;
     return new_var_nd(v);
   }
