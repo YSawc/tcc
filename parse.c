@@ -198,25 +198,33 @@ static bool is_fn(void) {
   return isfunc;
 }
 
-static Type *look_type(void) {
-  if (strcmp(token->str, "int") == 0)
+static Type *look_ty(void) {
+  if (!strcmp(token->str, "int"))
     return ty_int;
-  if (strcmp(token->str, "char") == 0)
-    return ty_char;
+  if (!strcmp(token->str, "char")) {
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
+    else
+      return ty_char;
+  }
   return NULL;
 }
 
-static void consume_typ(void) {
-  // list of reserved multiple letter.string
-  static char *types[] = {"int", "char"};
-
+static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
-  for (int i = 0; i < sizeof(types) / sizeof(*types); i++) {
-    if (startswith(token->str, types[i])) {
-      token = token->next;
-      break;
-    }
+  if (ty == ty_char || ty == ty_int) {
+    token = token->next;
+  } else if (ty == ty_d_by) {
+    token = token->next->next;
   }
+}
+
+static Type *expect_ty() {
+  Type *ty = look_ty();
+  if (!ty)
+    error_at(token->str, "expected type.");
+  consume_ty(ty);
+  return ty;
 }
 
 static Function *fn() {
@@ -232,13 +240,11 @@ static Function *fn() {
   fn_nm = expect_ident();
   expect('(');
   if (!consume(")")) {
-    Type *ty = look_type();
-    consume_typ();
+    Type *ty = expect_ty();
     new_l_var(expect_ident(), ty);
     args_c++;
     while (consume(",")) {
-      Type *ty = look_type();
-      consume_typ();
+      Type *ty = expect_ty();
       new_l_var(expect_ident(), ty);
       args_c++;
     }
@@ -266,10 +272,9 @@ Program *gen_program(void) {
 
   // detect global functoin.
   while (!is_fn()) {
-    Type *ty = look_type();
+    Type *ty = expect_ty();
     if (!ty)
       error_at(token->str, "expected type, but not detected.");
-    consume_typ();
     new_g_var(ty);
   }
 
@@ -347,7 +352,7 @@ static Node *stmt() {
     Node *nd = new_nd(ND_IF);
     nd->ln = conditional_c++;
     expect('(');
-    nd->cond = relational();
+    nd->cond = equality();
     expect(')');
     nd->then = stmt();
     if (consume("else")) {
@@ -382,9 +387,9 @@ static Node *stmt() {
     return nd;
   }
 
-  Type *ty = look_type();
+  Type *ty = look_ty();
   if (ty) {
-    consume_typ();
+    consume_ty(ty);
     Node *nd = expect_dec(ty);
     expect(';');
     return nd;
