@@ -126,6 +126,15 @@ static Node *new_expr(Node *lhs) {
   return nd;
 }
 
+static Var *consume_contents(Var *v) {
+  if (token->kind != TK_STR)
+    error_at(token->str, "expect contents.");
+  v->contents = token->str;
+  v->len = token->len + 1;
+  token = token->next;
+  return v;
+}
+
 static Node *phase_typ_rev(void);
 static Node *stmt(void);
 static Node *assign(void);
@@ -157,12 +166,11 @@ static Node *expect_dec(Type *ty) {
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
     Var *v = new_l_var(consume_ident()->str, ty);
-    expect('=');
-    v->contents = token->str;
-    v->len = token->len;
-    token = token->next;
     v->ln = conditional_c++;
     v->ty->base = ty;
+    if (consume("=")) {
+      v = consume_contents(v);
+    };
     return new_nd(ND_NULL);
   }
 
@@ -295,10 +303,8 @@ void assign_var_offset(Function *fn) {
   int i = 0;
   for (Var *v = fn->lv; v; v = v->next) {
     // data byte not assigned offset but labeled in sectio of data.
-    if (v->ty != ty_d_by) {
-      i += v->ty->size;
-      v->offset = i;
-    }
+    i += v->ty->size;
+    v->offset = i;
   }
 }
 
@@ -308,8 +314,7 @@ void emit_rsp(Function *func) {
 
   // shift rsp counter counts of local variable.
   for (Var *v = func->lv; v; v = v->next)
-    if (v->ty != ty_d_by)
-      c += v->ty->size;
+    c += v->ty->size;
 
   // sub rsp is multiples of 8. So rsp need roud up with 8 as nardinality.
   c = ((c + 8 - 1) / 8) * 8;
@@ -490,9 +495,9 @@ static Node *mul() {
   Node *nd = unary();
 
   if (consume("*")) {
-    nd = new_binary(ND_MUL, nd, mul());
+    return new_binary(ND_MUL, nd, mul());
   } else if (consume("/")) {
-    nd = new_binary(ND_DIV, nd, mul());
+    return new_binary(ND_DIV, nd, mul());
   }
 
   return nd;
@@ -579,6 +584,12 @@ static Node *primary_expr() {
     Var *v = find_var(tok);
     if (!v)
       error_at(token->str, "can't handle with undefined variable.");
+    if (v->ty == ty_d_by) {
+      if (consume("=")) {
+        v = consume_contents(v);
+        return new_binary(ND_ASSIGN, new_var_nd(v), new_nd(ND_NULL));
+      }
+    }
     return new_var_nd(v);
   }
 

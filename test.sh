@@ -186,4 +186,8 @@ assert 0 'int main() { return ({ 0; }); }'
 assert 2 'int main() { return ({ 0; 1; 2; }); }'
 assert 1 'int main() { ({ 0; return 1; 2; }); return 3; }'
 
+assert 97 'int main() { char *s; s="abc"; return s[0]; }'
+assert 98 'int main() { char *s; s="abc"; return s[1]; }'
+assert 99 'int main() { char *s; s="abc"; return s[2]; }'
+
 echo OK

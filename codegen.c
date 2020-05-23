@@ -8,6 +8,8 @@ static void gen_var_addr(Node *nd) {
   if (nd->kind == ND_REF) {
     code_gen(nd->lhs);
   } else if (v->contents) {
+    printf("  lea rax, [rbp-%d]\n", v->offset);
+    printf("  push rax\n");
     printf("  push offset .L.data.%d\n", v->ln);
   } else if (v->is_local) {
     printf("  lea rax, [rbp-%d]\n", v->offset);
