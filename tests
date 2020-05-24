@@ -13,10 +13,11 @@ int add6(int x, int y, int z, int l, int m, int n) {
 	return x+y+z+l+m+n;
 }
 
-// int fib(int x) {
-// 	if (x<=1) 1;
-// 	return fib(x-1) + fib(x-2);
-// }
+int fib(int x) {
+	if (x<=1)
+		return 1;
+	return fib(x-1) + fib(x-2);
+}
 
 // int sizeof_c() {
 // 	char c;
@@ -87,7 +88,7 @@ int main() {
 	assert(1, ({ char c = 1; c; }), "char c = 1; c;");
 	assert(1, ({ int i = 10; char c = 1; c; }), "int i = 10; char c = 1; c;");
 	assert(2, ({ int i = 10; char c = 1; char h = 2; h; }), "int i = 10; char c = 1; char h = 2; h;");
-	// assert(55, ({ fib(9); }), "fib(9)");
+	assert(55, fib(9), "fib(9)");
 	assert(0, ({ int x[2]; 0; }), "int x[2]; 0;");
 	assert(1, ({ int x[2]; *x=1; *x; }), "int x[2]; *x=1; *x;");
 	assert(2, ({ int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1); }), "int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1);");

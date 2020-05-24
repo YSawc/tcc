@@ -41,13 +41,13 @@ static void emit() {
 
   emit_data();
   emit_globals_data(prog);
+  emit_text();
 
   // Variable created this phase, so assign each variable with offset.
   assign_var_offset(prog->fn);
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
 
-    emit_text();
 
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
