@@ -63,7 +63,7 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
-    if (nd->ty == ty_char || nd->ty == ty_d_by)
+    if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by)
       load_8();
     else
       load_64();
