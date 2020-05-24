@@ -21,7 +21,7 @@ static void emit_globals_data(Program *prog) {
       printf("%s:\n", v->nm);
       printf("  .zero %d\n", v->ty->size);
     } else if (v->contents) {
-      printf(".L.data.%d:\n", v->offset);
+      printf(".L.data.%d:\n", v->ln);
       for (int i = 0; i < v->len; i++)
         printf("  .byte %d\n", v->contents[i]);
     }
@@ -46,14 +46,6 @@ static void emit() {
   assign_var_offset(prog->fn);
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
-    for (Var *v = fn->lv; v; v = v->next) {
-      if (v->ty == ty_d_by) {
-        printf(".L.data.%d:\n", v->ln);
-        for (int i = 0; i < v->len; i++) {
-          printf("  .byte %d\n", v->contents[i]);
-        }
-      }
-    }
 
     emit_text();
 
@@ -106,9 +98,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "%s: invalid number of arguments\n", argv[0]);
     return 1;
   }
-  /* user_input = argv[1]; */
   filename = argv[1];
-  /* user_input = read_file(argv[1]); */
   user_input = read_file(filename);
 
   gen_code();

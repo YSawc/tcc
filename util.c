@@ -38,7 +38,6 @@ static void verror_at(char *loc, char *fmt, va_list ap) {
   // Show the error message.
   int pos = loc - line + indent;
   if (0 <= pos && pos <= 256) {
-    fprintf(stderr, "%s\n", user_input);
     fprintf(stderr, "%*s", pos, "");
     fprintf(stderr, "^ ");
     vfprintf(stderr, fmt, ap);

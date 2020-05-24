@@ -8,19 +8,13 @@ static void gen_var_addr(Node *nd) {
   if (nd->kind == ND_REF) {
     code_gen(nd->lhs);
   } else if (v->is_local) {
-    if (v->contents) {
-      printf("  lea rax, [rbp-%d]\n", v->offset);
-      printf("  push rax\n");
-      printf("  push offset .L.data.%d\n", v->ln);
-    } else {
-      printf("  lea rax, [rbp-%d]\n", v->offset);
-      printf("  push rax\n");
-    }
+    printf("  lea rax, [rbp-%d]\n", v->offset);
+    printf("  push rax\n");
   } else {
     if (v->ty == ty_int)
       printf("  push offset %s\n", v->nm);
-    else if (v->ty == ty_d_by)
-      printf("  push offset .L.data.%d\n", v->offset);
+    else if (v->ty == ty_char_arr)
+      printf("  push offset .L.data.%d\n", v->ln);
   }
   return;
 }
@@ -56,8 +50,7 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
-    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR &&
-        nd->ty->kind != TY_D_BY)
+    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
       load_64();
     return;
   case ND_ASSIGN:

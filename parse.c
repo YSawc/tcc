@@ -33,15 +33,14 @@ static Var *new_l_var(char *nm, Type *ty) {
   return v;
 }
 
-static void new_g_var(Type *ty) {
-  char *nm = expect_ident();
-  expect(';');
+static Var *new_g_var(char *nm, Type *ty) {
   Var *v = calloc(1, sizeof(Var));
   v->next = gVars;
   v->ty = ty;
   v->nm = nm;
   give_scope(v);
   gVars = v;
+  return v;
 }
 
 static Var *new_arr_var(char *nm, int l, Type *ty) {
@@ -72,6 +71,19 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
 
   give_scope(v);
   return ret_v;
+}
+
+static Var *new_str_nd() {
+  Var *v = calloc(1, sizeof(Var));
+  v->next = gVars;
+  v->ty = ty_char_arr;
+  v->ty->base = ty_d_by;
+  v->len = token->len + 1;
+  v->contents = token->str;
+  v->ln = conditional_c++;
+  gVars = v;
+  token = token->next;
+  return v;
 }
 
 // find variable scope of a whole
@@ -126,7 +138,7 @@ static Node *new_expr(Node *lhs) {
   return nd;
 }
 
-static Var *consume_contents(Var *v) {
+static void *consume_contents(Var *v) {
   if (token->kind != TK_STR)
     error_at(token->str, "expect contents.");
   v->contents = token->str;
@@ -169,7 +181,8 @@ static Node *expect_dec(Type *ty) {
     v->ln = conditional_c++;
     v->ty->base = ty;
     if (consume("=")) {
-      v = consume_contents(v);
+      Node *nd = new_binary(ND_ASSIGN, new_var_nd(v), primary_expr());
+      return new_expr(nd);
     };
     return new_nd(ND_NULL);
   }
@@ -283,7 +296,9 @@ Program *gen_program(void) {
     Type *ty = expect_ty();
     if (!ty)
       error_at(token->str, "expected type, but not detected.");
-    new_g_var(ty);
+    char *nm = expect_ident();
+    new_g_var(nm, ty);
+    expect(';');
   }
 
   while (!at_eof()) {
@@ -581,16 +596,16 @@ static Node *primary_expr() {
     }
 
     // find variable.
-    Var *v = find_var(tok);
-    if (!v)
+    Var *lv = find_var(tok);
+    if (!lv)
       error_at(token->str, "can't handle with undefined variable.");
-    if (v->ty == ty_d_by) {
+    if (lv->ty == ty_d_by) {
       if (consume("=")) {
-        v = consume_contents(v);
-        return new_binary(ND_ASSIGN, new_var_nd(v), new_nd(ND_NULL));
+        Var *rv = new_str_nd();
+        return new_binary(ND_ASSIGN, new_var_nd(lv), new_var_nd(rv));
       }
     }
-    return new_var_nd(v);
+    return new_var_nd(lv);
   }
 
   if (consume("sizeof")) {
@@ -620,15 +635,7 @@ static Node *primary_expr() {
   // case of string literal.
   if (token->kind == TK_STR) {
     // string should parsed as global variable because formed as data-section.
-    Var *v = calloc(1, sizeof(Var));
-    v->next = gVars;
-    v->ty = ty_d_by;
-    v->ty->base = ty_d_by;
-    v->len = token->len + 1;
-    v->contents = token->str;
-    v->ln = conditional_c++;
-    gVars = v;
-    token = token->next;
+    Var *v = new_str_nd();
     return new_var_nd(v);
   }
 
