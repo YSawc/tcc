@@ -10,18 +10,18 @@ tcc: $(OBJS)
 $(OBJS): tcc.h
 
 test: tcc
-	./test.sh
-
-rewrite_test: tcc
 	./tcc tests > tmp.s
 	gcc -static -o tmp tmp.s
 	./tmp
 
-rewrite_signle_test: tcc
+signle_test: tcc
 	./tcc single_test > tmp.s
 	gcc -static -o tmp tmp.s
 	./tmp
 	sed -i '/^.global main$$/,$$!d' tmp.s
+
+old_test: tcc
+	./test.sh
 
 clean:
 	rm -f tcc *.o *~ tmp*
