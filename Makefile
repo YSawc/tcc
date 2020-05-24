@@ -21,7 +21,7 @@ signle_test: tcc
 	sed -i '/^.global main$$/,$$!d' tmp.s
 
 old_test: tcc
-	./test.sh
+	./old_test.sh
 
 clean:
 	rm -f tcc *.o *~ tmp*

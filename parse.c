@@ -139,15 +139,6 @@ static Node *new_expr(Node *lhs) {
   return nd;
 }
 
-static void *consume_contents(Var *v) {
-  if (token->kind != TK_STR)
-    error_at(token->str, "expect contents.");
-  v->contents = token->str;
-  v->len = token->len + 1;
-  token = token->next;
-  return v;
-}
-
 static Node *phase_typ_rev(void);
 static Node *stmt(void);
 static Node *assign(void);

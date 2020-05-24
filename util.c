@@ -92,7 +92,8 @@ char *strtoalpha(char *s) {
       break;
     }
   }
-  return strndup(s, l);
+  char *t = malloc(l);
+  return memcpy(t, s, l);
 }
 
 int lenIsDigit(char *s) {
