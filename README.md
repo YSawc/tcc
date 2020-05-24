@@ -32,5 +32,5 @@ How to run test: `make test`
   - [ ] structure
   - [ ] scratch some library
 - other task
-  - [ ] test in shell ( now only support run test with shell script. )
+  - [x] test in C ( rewite test written shell in C )
   - [ ] construct environment with docker

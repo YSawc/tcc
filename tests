@@ -66,7 +66,7 @@ int main() {
 	assert(12, ({ int ii = 3; int jj = 4; ii * jj; }), "int ii = 3; int jj = 4; ii * jj;");
 	assert(1, ({ int x; if (1) x=1; else x=2; x; }), "int x; if (1) x=1; else x=2; x;");
 	assert(3, ({ 1; {2;} 3; }), "1; {2;} 3;");
-	assert(3,  ret3() , "ret3()");
+	assert(3, ret3(), "ret3()");
 	assert(6, ret3() * 2, "ret3() * 2");
 	assert(3, add(1, 2), "add(1, 2)");
 	assert(21, add6(1, 2, 3, 4, 5, 6), "add6(1, 2, 3, 4, 5, 6)");
@@ -87,12 +87,12 @@ int main() {
 	assert(1, ({ int i = 10; char c = 1; c; }), "int i = 10; char c = 1; c;");
 	assert(2, ({ int i = 10; char c = 1; char h = 2; h; }), "int i = 10; char c = 1; char h = 2; h;");
 	// assert(55, ({ fib(9); }), "fib(9)");
-	assert(0, ({  int x[2]; 0; }), "int x[2]; 0;");
-	assert(1, ({  int x[2]; *x=1; *x; }), "int x[2]; *x=1; *x;");
-	assert(2, ({  int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1); }), "int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1);");
-	assert(3, ({  int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+2); }), "int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+2);");
-	assert(1, ({  char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *ca; }), "char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *ca;");
-	assert(2, ({  char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+1); }), "char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+1);");
+	assert(0, ({ int x[2]; 0; }), "int x[2]; 0;");
+	assert(1, ({ int x[2]; *x=1; *x; }), "int x[2]; *x=1; *x;");
+	assert(2, ({ int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1); }), "int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+1);");
+	assert(3, ({ int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+2); }), "int x[2]; *x=1; *(x+1)=2; *(x+2)=3; *(x+2);");
+	assert(1, ({ char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *ca; }), "char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *ca;");
+	assert(2, ({ char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+1); }), "char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+1);");
 	assert(3, ({ char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+2); }), "char ca[2]; *ca=1; *(ca+1)=2; *(ca+2)=3; *(ca+2);");
 	assert(2, ({ int x[2]; *(1+x)=2; *(x+1); }), "int x[2]; *(1+x)=2; *(x+1);");
 	assert(1, ({ char ca[2]; *(ca+1)=1; *(1+ca); }), "char ca[2]; *(ca+1)=1; *(1+ca);");
@@ -106,8 +106,8 @@ int main() {
 	assert(97, ({ char c = 'a'; c; }), "char c = 'a'; c;");
 	assert(98, ({ char c = 'b'; c; }), "char c = 'b'; c;");
 	assert(99, ({ char c = 'c'; c; }), "char c = 'c'; c;");
-	assert(2, ({  /* return 1; */ 2; }), "/* 1; */ 2;");
-	assert(2, ({  // 1;
+	assert(2, ({ /* return 1; */ 2; }), "/* 1; */ 2;");
+	assert(2, ({ // 1;
 	2; }), "\\1 \\n 2");
 	assert(0, ({ char *s = "test"; 0; }), "char *s = \"test\"; 0;");
 	assert(97, ({ char *s = "abc"; s[0]; }), "char *s = \"abc\"; s[0];");
