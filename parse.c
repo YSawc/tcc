@@ -38,8 +38,9 @@ static Var *new_g_var(char *nm, Type *ty) {
   v->next = gVars;
   v->ty = ty;
   v->nm = nm;
-  give_scope(v);
   gVars = v;
+
+  give_scope(v);
   return v;
 }
 

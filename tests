@@ -13,10 +13,10 @@ int add6(int x, int y, int z, int l, int m, int n) {
 	return x+y+z+l+m+n;
 }
 
-int fib(int x) {
-	if (x<=1) 1;
-	return fib(x-1) + fib(x-2);
-}
+// int fib(int x) {
+// 	if (x<=1) 1;
+// 	return fib(x-1) + fib(x-2);
+// }
 
 // int sizeof_c() {
 // 	char c;
@@ -80,9 +80,10 @@ int main() {
 	assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;");
 	assert(3, ({ int x=3; int y=5; *(&y-1); }), "int x=3; int y=5; *(&y-1);");
 	assert(5, ({ int x=3; int y=5; *(&x+1); }), "int x=3; int y=5; *(&x+1);");
-	// assert(2, ({ gi1; }); "gi1");
-	// assert(0, ({ gi2 = 2; gi1; }), "gi2 = 2; gi1;");
-	// assert(2, ({ gi2 = 2; gi2; }), "gi2 = 2; gi2;");
+	assert(0, gi1, "gi1");
+	assert(2, ({ gi1 = 2; gi1; }), "gi1 = 2; gi1;"); /* FOR_INIT: */ gi1=0;
+	assert(0, ({ gi2 = 2; gi1; }), "gi2 = 2; gi1;"); /* FOR_INIT: */ gi2=0;
+	assert(2, ({ gi2 = 2; gi2; }), "gi2 = 2; gi2;"); /* FOR_INIT: */ gi2=0;
 	assert(1, ({ char c = 1; c; }), "char c = 1; c;");
 	assert(1, ({ int i = 10; char c = 1; c; }), "int i = 10; char c = 1; c;");
 	assert(2, ({ int i = 10; char c = 1; char h = 2; h; }), "int i = 10; char c = 1; char h = 2; h;");
