@@ -116,10 +116,10 @@ Token *tokenize(void) {
 
   // list of reserved single letter.symbol
   static char sSym[] = {'+', '-', '*', '&', '/', '(', ')', '{', '}',
-                        '[', ']', ';', '=', '<', '>', ',', '\''};
+                        '[', ']', ';', '=', '<', '>', ',', '\'', '.'};
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if", "else", "while", "int", "char", "sizeof"};
+  static char *mSt[] = {"if", "else", "while", "int", "char", "sizeof", "struct"};
 
   while (*p) {
 

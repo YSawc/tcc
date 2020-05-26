@@ -2,6 +2,7 @@
 
 static Var *lVars;
 static Var *gVars;
+static Var *stVars;
 static int conditional_c = 0;
 static Scope *scope;
 
@@ -13,6 +14,13 @@ void set_current_fn(char *c) { fn_nm = c; }
 static void give_scope(Var *v) {
   Scope *sc = calloc(1, sizeof(Scope));
   sc->v = v;
+  sc->next = scope;
+  scope = sc;
+}
+
+static void give_m_scope(Member *m) {
+  Scope *sc = calloc(1, sizeof(Scope));
+  sc->m = m;
   sc->next = scope;
   scope = sc;
 }
@@ -42,6 +50,13 @@ static Var *new_g_var(char *nm, Type *ty) {
 
   give_scope(v);
   return v;
+}
+
+static Member *new_m(char *nm) {
+  Member *m = calloc(1, sizeof(Member));
+  m->nm = nm;
+  give_m_scope(m);
+  return m;
 }
 
 static Var *new_arr_var(char *nm, int l, Type *ty) {
@@ -91,7 +106,33 @@ static Var *new_str_nd() {
 static Var *find_var(Token *tok) {
   for (Scope *s = scope; s; s = s->next) {
     Var *v = s->v;
+    if (!v || v->is_m)
+      continue;
     if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
+      return v;
+  }
+  return NULL;
+}
+
+// find member scope in a struct
+static Member *find_mem(Token *tok) {
+  for (Scope *s = scope; s; s = s->next) {
+    Member *m = s->m;
+    if (!m)
+      continue;
+    if (strlen(m->nm) == tok->len && !strncmp(m->nm, tok->str, tok->len))
+      return m;
+  }
+  return NULL;
+}
+
+// find variable scope in a struct
+static Var *find_mem_var(Member *m, Token *tok) {
+  for (Scope *s = scope; s; s = s->next) {
+    Var *v = s->v;
+    if (!v || !v->is_m)
+      continue;
+    if (v->m == m->nm && strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
   }
   return NULL;
@@ -352,6 +393,7 @@ static Node *phase_typ_rev() {
 /* stmt = "return" expr ";" */
 /*      | "if" "(" cond ")" stmt ("else" stmt)?  */
 /*      | "while" "(" cond ")" stmt ";" */
+/*      | "struct" "{" (cond)? "}" Ident ";" */
 /*      | "{" stmt* "}" */
 static Node *stmt() {
   if (consume("return")) {
@@ -381,6 +423,33 @@ static Node *stmt() {
     expect(')');
     nd->stmt = stmt();
     return nd;
+  }
+
+  if (consume("struct")) {
+    expect('{');
+
+    Token *t = token;
+    // read name of struct in advance.
+    while (!consume("}")) {
+      token = token->next;
+    }
+
+    char *nm = consume_ident()->str;
+    Member *m = new_m(nm);
+    token = t;
+
+    while (!consume("}")) {
+      Type *ty = expect_ty();
+      Var *v = new_l_var(consume_ident()->str, ty);
+      v->is_m = true;
+      v->m = m->nm;
+      expect(';');
+    }
+    consume_ident();
+    expect(';');
+    m->v = stVars;
+    stVars = NULL;
+    return new_nd(ND_NULL);
   }
 
   if (consume("{")) {
@@ -543,6 +612,7 @@ static Node *idx() {
 /*              | "(" "{" (stmt)* "}" ")" */
 /*              | Ident ("()")? */
 /*              | Ident */
+/*              | Ident "." */
 /*              | ImmString "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
@@ -587,10 +657,22 @@ static Node *primary_expr() {
       return nd;
     }
 
+    // access member of struct.
+    if (consume(".")) {
+      Member *m = find_mem(tok);
+      if (!m)
+        error_at(token->str, "can't handle with undefined struct.");
+      Var *v = find_mem_var(m, consume_ident());
+      if (!v)
+        error_at(token->str,
+                 "can't handle with undefined variable in member of struct.");
+      return new_var_nd(v);
+    }
+
     // find variable.
     Var *lv = find_var(tok);
     if (!lv)
-      error_at(token->str, "can't handle with undefined variable.");
+      error_at(tok->str, "can't handle with undefined variable.");
     if (lv->ty == ty_d_by) {
       if (consume("=")) {
         Var *rv = new_str_nd();

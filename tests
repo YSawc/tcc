@@ -19,11 +19,6 @@ int fib(int x) {
 	return fib(x-1) + fib(x-2);
 }
 
-// int sizeof_c() {
-// 	char c;
-// 	return sizeof(c);
-// }
-
 int assert(int expected, int actual, char *code) {
 	if (expected == actual) {
 		printf("%s => %d\n", code, actual);
@@ -120,7 +115,6 @@ int main() {
 	assert(2, ({ int x=2; { int x=3; } { int y=4; } x; }), "int x=2; { int x=3;} { int x=4; }");
 	assert(3, ({ int i = 3; i; }), "int i = 3; i;");
 	assert(1, ({ char c; sizeof(c); }), "char c; sizeof(c);");
-	// assert(1, ({ int c; sizeof_c(); } }), "int c; sizeof_c();");
 	assert(7, ({ char *s="\a"; s[0]; }), "char *s=\"\\a\"; s[0];");
 	assert(8, ({ char *s="\b"; s[0]; }), "char *s=\"\\b\"; s[0];");
 	assert(9, ({ char *s="\t"; s[0]; }), "char *s=\"\\t\"; s[0];");
@@ -146,6 +140,9 @@ int main() {
 	assert(97, ({ char *s; s="abc"; s[0]; }), "char *s; s=\"abc\"; s[0];");
 	assert(98, ({ char *s; s="abc"; s[1]; }), "char *s; s=\"abc\"; s[1];");
 	assert(99, ({ char *s; s="abc"; s[2]; }), "char *s; s=\"abc\"; s[2];");
+	assert(2, ({ struct {int x; int y;}s; s.x=2; s.y=3; s.x;}), "struct {int x; int y;}s; s.x=2; s.y=3; s.x;");
+	assert(3, ({ struct {int x; int y;}s; s.x=2; s.y=3; s.y;}), "struct {int x; int y;}s; s.x=2; s.y=3; s.y;");
+	assert(14, ({ struct {int x; int y;}s; s.x=2; s.y=3; struct { int l; int m;}n; n.l=4; n.m=5; s.x+s.y+n.l+n.m;}), "struct {int x; int y;}s; s.x=2; s.y=3; struct { int l; int m;}n; n.l=4; n.m=5; s.x+s.y+n.l+n.m;");
 	assert(0, 0, "0");
 	assert(0, ({ 0; }), "0");
 	return 0;

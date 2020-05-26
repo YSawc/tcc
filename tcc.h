@@ -86,6 +86,7 @@ extern Type *ty_int_arr;
 extern Type *ty_d_by;
 
 bool is_integer(Type *typ);
+Type *type_arr(Type *ty);
 void typ_rev(Node *nd);
 bool lr_if_or(Node *nd, Kind k);
 
@@ -105,21 +106,30 @@ void set_current_fn(char *c);
 typedef struct Var Var;
 struct Var {
   Var *next;
-  char *nm;      // Variable name
-  int offset;    // Offset from RBP
-  Type *ty;      // type
-  bool is_local; // true if local variable
-  int len;       // length
-
+  char *nm;       // Variable name
+  int offset;     // Offset from RBP
+  Type *ty;       // type
+  bool is_local;  // true if local variable
+  bool is_m;    // ture if member of struct
+  char *m; // stirng contents
+  int len;        // length
   char *contents; // stirng contents
 
   int ln; // label number
+};
+
+typedef struct Member Member;
+struct Member{
+  char *nm;   // Struct name
+  int offset; // Offset from RBP
+  Var *v;     // Variables (only referencable called dot statement)
 };
 
 typedef struct Scope Scope;
 struct Scope {
   Scope *next;
   Var *v;
+  Member *m;
 };
 
 // AST node

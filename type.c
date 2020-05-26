@@ -20,6 +20,16 @@ bool lr_if_or(Node *nd, Kind k) {
   return nd->ty->kind == k || k == nd->rhs->ty->kind;
 }
 
+Type *type_arr(Type *ty) {
+  if (ty == ty_char)
+    return ty_char_arr;
+  else if (ty == ty_int)
+    return ty_int_arr;
+  else
+    error("array type expected but not got.");
+  return NULL;
+}
+
 void typ_rev(Node *nd) {
   if (!nd || nd->ty)
     return;
