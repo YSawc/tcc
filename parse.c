@@ -89,7 +89,7 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
   return ret_v;
 }
 
-static Var *new_str_nd() {
+static Var *new_str() {
   Var *v = calloc(1, sizeof(Var));
   v->next = gVars;
   v->ty = ty_char_arr;
@@ -132,7 +132,8 @@ static Var *find_mem_var(Member *m, Token *tok) {
     Var *v = s->v;
     if (!v || !v->is_m)
       continue;
-    if (v->m == m->nm && strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
+    if (v->m == m->nm && strlen(v->nm) == tok->len &&
+        !strncmp(v->nm, tok->str, tok->len))
       return v;
   }
   return NULL;
@@ -228,6 +229,24 @@ static Node *expect_dec(Type *ty) {
   }
 
   return new_nd(ND_NULL);
+}
+
+static Var *expect_init_v(Type *ty) {
+  Token *tok = consume_ident();
+
+  if (consume("*")) {
+    if (ty == ty_char)
+      ty = ty_d_by;
+    else
+      error_at(token->str, "now not support initialize of reference of other "
+                           "than char literal.");
+    Var *v = new_l_var(consume_ident()->str, ty);
+    v->ln = conditional_c++;
+    v->ty->base = ty;
+    return v;
+  }
+
+  return new_l_var(tok->str, ty);
 }
 
 static Node *func_args() {
@@ -440,15 +459,15 @@ static Node *stmt() {
 
     while (!consume("}")) {
       Type *ty = expect_ty();
-      Var *v = new_l_var(consume_ident()->str, ty);
+      Var *v = expect_init_v(ty);
       v->is_m = true;
       v->m = m->nm;
       expect(';');
     }
     consume_ident();
     expect(';');
-    m->v = stVars;
-    stVars = NULL;
+    /* m->v = stVars; */
+    /* stVars = NULL; */
     return new_nd(ND_NULL);
   }
 
@@ -662,11 +681,18 @@ static Node *primary_expr() {
       Member *m = find_mem(tok);
       if (!m)
         error_at(token->str, "can't handle with undefined struct.");
-      Var *v = find_mem_var(m, consume_ident());
-      if (!v)
+      Var *lv = find_mem_var(m, consume_ident());
+      if (!lv)
         error_at(token->str,
                  "can't handle with undefined variable in member of struct.");
-      return new_var_nd(v);
+
+      if (lv->ty == ty_d_by) {
+        if (consume("=")) {
+          Var *rv = new_str();
+          return new_binary(ND_ASSIGN, new_var_nd(lv), new_var_nd(rv));
+        }
+      }
+      return new_var_nd(lv);
     }
 
     // find variable.
@@ -675,7 +701,7 @@ static Node *primary_expr() {
       error_at(tok->str, "can't handle with undefined variable.");
     if (lv->ty == ty_d_by) {
       if (consume("=")) {
-        Var *rv = new_str_nd();
+        Var *rv = new_str();
         return new_binary(ND_ASSIGN, new_var_nd(lv), new_var_nd(rv));
       }
     }
@@ -709,7 +735,7 @@ static Node *primary_expr() {
   // case of string literal.
   if (token->kind == TK_STR) {
     // string should parsed as global variable because formed as data-section.
-    Var *v = new_str_nd();
+    Var *v = new_str();
     return new_var_nd(v);
   }
 
