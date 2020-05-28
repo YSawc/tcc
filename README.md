@@ -19,6 +19,7 @@ How to run test: `make test`
     - [x] int
     - [x] string
   - [x] comparison operator
+  - [x] boolean statement
   - [x] block handle in the same function
   - [x] call function and definition
   - [x] if, while and for statements
@@ -30,6 +31,7 @@ How to run test: `make test`
     - [x] 'hello world' with static library
     - [ ] 'hello world' with scratch
   - [ ] structure
+    - [x] initialize and assignment
   - [ ] scratch some library
 - other task
   - [x] test in C ( rewite test written shell in C )
