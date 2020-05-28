@@ -475,6 +475,19 @@ static Node *stmt() {
     return new_nd(ND_NULL);
   }
 
+  if (consume("enum")) {
+    expect('{');
+    int e = 1;
+    Var *v = new_l_var(consume_ident()->str, ty_enum);
+    v->en = e++;
+    while (consume(",")) {
+      Var *v = new_l_var(consume_ident()->str, ty_enum);
+      v->en = e++;
+    }
+    expect('}');
+    expect(';');
+  }
+
   if (consume("{")) {
     Node head = {};
     Node *cur = &head;
@@ -703,6 +716,8 @@ static Node *primary_expr() {
     Var *lv = find_var(tok);
     if (!lv)
       error_at(tok->str, "can't handle with undefined variable.");
+    if (lv->ty == ty_enum)
+      return new_num(lv->en);
     if (lv->ty == ty_d_by) {
       if (consume("=")) {
         Var *rv = new_str();

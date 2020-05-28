@@ -99,7 +99,7 @@ Token *read_typed_str(Token *cur, char *p) {
     }
   }
   Token *tok = new_token(TK_STR, cur, NULL, p - q);
-  tok->str = malloc(len+1);
+  tok->str = malloc(len + 1);
   memcpy(tok->str, buf, len);
   tok->len = p - q;
   cur->next = tok;
@@ -115,11 +115,12 @@ Token *tokenize(void) {
   static char *mSym[] = {"==", "!=", "<=", "=>", ">=", "=<"};
 
   // list of reserved single letter.symbol
-  static char sSym[] = {'+', '-', '*', '&', '/', '(', ')', '{', '}',
+  static char sSym[] = {'+', '-', '*', '&', '/', '(', ')', '{',  '}',
                         '[', ']', ';', '=', '<', '>', ',', '\'', '.'};
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if", "else", "while", "int", "char", "sizeof", "struct", "bool"};
+  static char *mSt[] = {"if",     "else",   "while", "int", "char",
+                        "sizeof", "struct", "bool",  "enum"};
 
   while (*p) {
 

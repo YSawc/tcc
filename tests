@@ -153,6 +153,10 @@ int main() {
 	assert(0, ({ bool b = 0; b; }), "bool b = 0; b;");
 	assert(1, ({ bool b = 1; b; }), "bool b = 1; b;");
 	assert(1, ({ bool b = 3; b; }), "bool b = 3; b;");
+	assert(1, ({ enum { l, m, n }; l; }), "enum { l, m, n }; l;");
+	assert(2, ({ enum { l, m, n }; m; }), "enum { l, m, n }; m;");
+	assert(3, ({ enum { l, m, n }; n; }), "enum { l, m, n }; n;");
+	assert(4, ({ enum { l }; sizeof(l); }), "enum { l }; sizeof(l);");
 	assert(0, 0, "0");
 	assert(0, ({ 0; }), "0");
 	return 0;

@@ -69,6 +69,7 @@ typedef enum {
   TY_CHAR_ARR,
   TY_INT_ARR,
   TY_D_BY, // type data byte
+  TY_ENUM,
   TY_PTR,
 } Kind;
 
@@ -85,6 +86,7 @@ extern Type *ty_int;
 extern Type *ty_b;
 extern Type *ty_char_arr;
 extern Type *ty_int_arr;
+extern Type *ty_enum;
 extern Type *ty_d_by;
 
 bool is_integer(Type *typ);
@@ -116,6 +118,7 @@ struct Var {
   char *m;        // stirng contents
   int len;        // length
   char *contents; // stirng contents
+  int en;         // enumeration number
 
   int ln; // label number
 };
