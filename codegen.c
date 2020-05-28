@@ -34,7 +34,7 @@ static void load_64(void) {
 static void store_val(Type *ty) {
   printf("  pop rdi\n");
   printf("  pop rax\n");
-  if (ty->kind == TY_CHAR_ARR)
+  if (ty->kind == TY_CHAR_ARR || ty->kind == TY_CHAR)
     printf("  mov [rax], dil\n");
   else if (ty->kind == TY_B) {
     printf("  cmp rdi, 0\n");
@@ -55,7 +55,7 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
-    if (nd->ty->kind == TY_B)
+    if (nd->ty->kind == TY_B || nd->ty->kind == TY_CHAR)
       load_8();
     else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
       load_64();
