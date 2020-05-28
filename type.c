@@ -2,6 +2,7 @@
 
 Type *ty_char = &(Type){TY_CHAR, 1};
 Type *ty_int = &(Type){TY_INT, 8};
+Type *ty_b = &(Type){TY_B, 1};
 Type *ty_char_arr = &(Type){TY_CHAR_ARR, 1};
 Type *ty_int_arr = &(Type){TY_INT_ARR, 8};
 Type *ty_d_by = &(Type){TY_D_BY, 8};

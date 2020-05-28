@@ -36,7 +36,12 @@ static void store_val(Type *ty) {
   printf("  pop rax\n");
   if (ty->kind == TY_CHAR_ARR)
     printf("  mov [rax], dil\n");
-  else
+  else if (ty->kind == TY_B) {
+    printf("  cmp rdi, 0\n");
+    printf("  setne dil\n");
+    printf("  movzb rdi, dil\n");
+    printf("  mov [rax], dil\n");
+  } else
     printf("  mov [rax], rdi\n");
   printf("  push rdi\n");
 }
@@ -50,7 +55,9 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
-    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
+    if (nd->ty->kind == TY_B)
+      load_8();
+    else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
       load_64();
     return;
   case ND_ASSIGN:

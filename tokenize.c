@@ -119,7 +119,7 @@ Token *tokenize(void) {
                         '[', ']', ';', '=', '<', '>', ',', '\'', '.'};
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if", "else", "while", "int", "char", "sizeof", "struct"};
+  static char *mSt[] = {"if", "else", "while", "int", "char", "sizeof", "struct", "bool"};
 
   while (*p) {
 

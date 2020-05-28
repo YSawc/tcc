@@ -280,12 +280,14 @@ static Type *look_ty(void) {
     else
       return ty_char;
   }
+  if (!strcmp(token->str, "bool"))
+    return ty_b;
   return NULL;
 }
 
 static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
-  if (ty == ty_char || ty == ty_int) {
+  if (ty == ty_char || ty == ty_int || ty == ty_b) {
     token = token->next;
   } else if (ty == ty_d_by) {
     token = token->next->next;

@@ -65,6 +65,7 @@ extern Token *token;
 typedef enum {
   TY_CHAR,
   TY_INT,
+  TY_B,
   TY_CHAR_ARR,
   TY_INT_ARR,
   TY_D_BY, // type data byte
@@ -81,6 +82,7 @@ struct Type {
 
 extern Type *ty_char;
 extern Type *ty_int;
+extern Type *ty_b;
 extern Type *ty_char_arr;
 extern Type *ty_int_arr;
 extern Type *ty_d_by;
