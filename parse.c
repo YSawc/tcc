@@ -457,11 +457,13 @@ static Node *stmt() {
 
     char *nm = consume_ident()->str;
     Member *m = new_m(nm);
+    m->size = 0;
     token = t;
 
     while (!consume("}")) {
       Type *ty = expect_ty();
       Var *v = expect_init_v(ty);
+      m->size += v->ty->size;
       v->is_m = true;
       v->m = m->nm;
       expect(';');
@@ -717,9 +719,16 @@ static Node *primary_expr() {
     if (!tok)
       error_at(token->str, "expected ident.");
     Var *v = find_var(tok);
-    if (!v)
-      error_at(token->str, "expected declaration variable.");
-    nd = new_num(v->ty->size);
+    if (v) {
+      nd = new_num(v->ty->size);
+    } else {
+      Member *m = find_mem(tok);
+      if (m) {
+        nd = new_num(m->size);
+      } else {
+        error_at(token->str, "expected declaration variable.");
+      }
+    }
     expect(')');
     return nd;
   }

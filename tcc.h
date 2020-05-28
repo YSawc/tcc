@@ -112,8 +112,8 @@ struct Var {
   int offset;     // Offset from RBP
   Type *ty;       // type
   bool is_local;  // true if local variable
-  bool is_m;    // ture if member of struct
-  char *m; // stirng contents
+  bool is_m;      // ture if member of struct
+  char *m;        // stirng contents
   int len;        // length
   char *contents; // stirng contents
 
@@ -121,10 +121,11 @@ struct Var {
 };
 
 typedef struct Member Member;
-struct Member{
+struct Member {
   char *nm;   // Struct name
   int offset; // Offset from RBP
   Var *v;     // Variables (only referencable called dot statement)
+  int size;   // value of sizeof. total count of child variables.
 };
 
 typedef struct Scope Scope;
