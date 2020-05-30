@@ -157,6 +157,10 @@ int main() {
 	assert(2, ({ enum { l, m, n }; m; }), "enum { l, m, n }; m;");
 	assert(3, ({ enum { l, m, n }; n; }), "enum { l, m, n }; n;");
 	assert(4, ({ enum { l }; sizeof(l); }), "enum { l }; sizeof(l);");
+	assert(1, sizeof(char), "sizeof(char)");
+	assert(4, sizeof(int), "sizeof(int)");
+	assert(4, sizeof(float), "sizeof(float)");
+	assert(8, sizeof(double), "sizeof(double)");
 	assert(0, 0, "0");
 	assert(0, ({ 0; }), "0");
 	return 0;

@@ -730,6 +730,14 @@ static Node *primary_expr() {
   if (consume("sizeof")) {
     Node *nd = calloc(1, sizeof(Node));
     expect('(');
+
+    int b = consume_base(token);
+    if (b) {
+      token = token->next;
+      expect(')');
+      return new_num(b);
+    }
+
     Token *tok = consume_ident();
     if (!tok)
       error_at(token->str, "expected ident.");

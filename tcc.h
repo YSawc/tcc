@@ -52,6 +52,7 @@ Token *consume(char *op);
 Token *expect_str(char *str);
 char *expect_ident(void);
 Token *consume_ident(void);
+int consume_base(Token *tok);
 Token *tokenize(void);
 
 extern char *filename;

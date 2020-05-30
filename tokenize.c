@@ -1,4 +1,5 @@
 #include "tcc.h"
+#include <string.h>
 
 char *filename;
 char *user_input;
@@ -34,6 +35,16 @@ Token *consume_ident(void) {
   Token *t = token;
   token = token->next;
   return t;
+}
+
+int consume_base(Token *tok) {
+  if (!strcmp(tok->str, "char"))
+    return 1;
+  else if (!strcmp(tok->str, "int") || !strcmp(tok->str, "float"))
+    return 4;
+  else if (!strcmp(tok->str, "double"))
+    return 8;
+  return 0;
 }
 
 // Expect ident.
