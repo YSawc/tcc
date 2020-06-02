@@ -89,7 +89,7 @@ static Var *new_arr_var(char *nm, int l, Type *ty) {
   return ret_v;
 }
 
-static Var *new_str() {
+static Var *new_str(void) {
   Var *v = calloc(1, sizeof(Var));
   v->next = gVars;
   v->ty = ty_char_arr;
@@ -249,7 +249,7 @@ static Var *expect_init_v(Type *ty) {
   return new_l_var(tok->str, ty);
 }
 
-static Node *func_args() {
+static Node *func_args(void) {
   if (consume(")"))
     return NULL;
 
@@ -294,7 +294,7 @@ static void consume_ty(Type *ty) {
   }
 }
 
-static Type *expect_ty() {
+static Type *expect_ty(void) {
   Type *ty = look_ty();
   if (!ty)
     error_at(token->str, "expected type.");
@@ -302,7 +302,7 @@ static Type *expect_ty() {
   return ty;
 }
 
-static Function *fn() {
+static Function *fn(void) {
   lVars = NULL;
 
   int args_c = 0;
@@ -405,7 +405,7 @@ void emit_args(Function *fn) {
 }
 
 // In this phase, reveal type of each returned node.
-static Node *phase_typ_rev() {
+static Node *phase_typ_rev(void) {
   Node *nd = stmt();
   typ_rev(nd);
   return nd;
@@ -416,7 +416,7 @@ static Node *phase_typ_rev() {
 /*      | "while" "(" cond ")" stmt ";" */
 /*      | "struct" "{" (cond)? "}" Ident ";" */
 /*      | "{" stmt* "}" */
-static Node *stmt() {
+static Node *stmt(void) {
   if (consume("return")) {
     Node *nd = new_uarray(ND_RETURN, assign());
     expect(';');
@@ -518,7 +518,7 @@ static Node *stmt() {
 }
 
 // assign = equality ("=" assign)?
-static Node *assign() {
+static Node *assign(void) {
   Node *nd = equality();
 
   if (consume("=")) {
@@ -590,7 +590,7 @@ static Node *new_sub(Node *lhs, Node *rhs) {
 }
 
 /* add = mul ( "*" mul | "/" mul )* */
-static Node *add() {
+static Node *add(void) {
   Node *nd = mul();
 
   if (consume("+")) {
@@ -603,7 +603,7 @@ static Node *add() {
 }
 
 /* mul = unary ( "*" unary | "/" unary )* */
-static Node *mul() {
+static Node *mul(void) {
   Node *nd = unary();
 
   if (consume("*")) {
@@ -616,7 +616,7 @@ static Node *mul() {
 }
 
 /* unary = ( "+" | "-" | "*" | "&" )? primary_expr */
-static Node *unary() {
+static Node *unary(void) {
   if (consume("+")) {
     return unary();
   } else if (consume("-")) {
@@ -631,7 +631,7 @@ static Node *unary() {
 }
 
 /* idx = primary "[" num "]" */
-static Node *idx() {
+static Node *idx(void) {
   Node *nd = primary_expr();
 
   if (consume("[")) {
@@ -653,7 +653,7 @@ static Node *idx() {
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
 /*              | "\"" {contents} "\"" */
-static Node *primary_expr() {
+static Node *primary_expr(void) {
   if (consume("(")) {
     if (consume("{")) {
       // read gnu statement.

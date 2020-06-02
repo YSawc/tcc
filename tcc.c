@@ -1,6 +1,6 @@
 #include "tcc.h"
 
-static void emit_prologue() { printf(".intel_syntax noprefix\n"); }
+static void emit_prologue(void) { printf(".intel_syntax noprefix\n"); }
 
 static void emit_fn(Function *fn) {
   char *fn_nm = fn->nm;
@@ -35,7 +35,7 @@ static void emit_out_fn(Function *fn) {
   printf("  ret\n");
 }
 
-static void emit() {
+static void emit(void) {
   token = tokenize();
   Program *prog = gen_program();
 
@@ -47,7 +47,6 @@ static void emit() {
   assign_var_offset(prog->fn);
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
-
 
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
@@ -68,7 +67,7 @@ static void emit() {
   }
 }
 
-static void gen_code() {
+static void gen_code(void) {
   emit_prologue();
   emit();
 }
