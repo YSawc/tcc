@@ -49,6 +49,7 @@ static void store_val(Type *ty) {
 void code_gen(Node *nd) {
   switch (nd->kind) {
   case ND_NULL:
+  case ND_VD:
     return;
   case ND_NUM:
     printf("  push %ld\n", nd->val);

@@ -208,6 +208,8 @@ static Node *expect_dec(Type *ty) {
   if (consume("*")) {
     if (ty == ty_char)
       ty = ty_d_by;
+    else if (ty == ty_vd)
+      ty = ty_vd;
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
@@ -282,12 +284,14 @@ static Type *look_ty(void) {
   }
   if (!strcmp(token->str, "bool"))
     return ty_b;
+  if (!strcmp(token->str, "void"))
+    return ty_vd;
   return NULL;
 }
 
 static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
-  if (ty == ty_char || ty == ty_int || ty == ty_b) {
+  if (ty == ty_char || ty == ty_int || ty == ty_b || ty == ty_vd) {
     token = token->next;
   } else if (ty == ty_d_by) {
     token = token->next->next;

@@ -7,6 +7,7 @@ Type *ty_char_arr = &(Type){TY_CHAR_ARR, 1};
 Type *ty_int_arr = &(Type){TY_INT_ARR, 8};
 Type *ty_d_by = &(Type){TY_D_BY, 8};
 Type *ty_enum = &(Type){TY_ENUM, 4};
+Type *ty_vd = &(Type){TY_VOID, 0};
 
 bool is_integer(Type *ty) { return ty->kind == TY_INT; }
 

@@ -161,6 +161,7 @@ int main() {
 	assert(4, sizeof(int), "sizeof(int)");
 	assert(4, sizeof(float), "sizeof(float)");
 	assert(8, sizeof(double), "sizeof(double)");
+	{ void *v; } printf("void *v; => \n");
 	assert(0, 0, "0");
 	assert(0, ({ 0; }), "0");
 	return 0;
