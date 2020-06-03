@@ -329,6 +329,13 @@ static Function *fn(void) {
     }
     expect(')');
   }
+
+  if (startswith(token->str, ";")) {
+    expect(';');
+    fn->nm = fn_nm;
+    return fn;
+  }
+
   expect('{');
   while (!consume("}")) {
     cur_nd->next = phase_typ_rev();

@@ -47,7 +47,6 @@ static void emit(void) {
   assign_var_offset(prog->fn);
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
-
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
     for (Var *v = fn->lv; v; v = v->next) {

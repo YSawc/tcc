@@ -11,6 +11,7 @@ How to run test: `make test`
     - [x] char
     - [x] int
     - [x] string
+    - [x] void
   - [x] variable
     - [x] gloval variable
     - [x] local variable
