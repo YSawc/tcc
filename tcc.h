@@ -157,6 +157,7 @@ typedef enum {
   ND_LTE,       // <=
   ND_ADDR,      // &
   ND_REF,       // *
+  ND_SUR,       // !
   ND_RETURN,    // Return
   ND_IF,        // If
   ND_WHILE,     // While

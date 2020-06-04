@@ -158,6 +158,16 @@ void code_gen(Node *nd) {
     printf("  not rax\n");
     printf("  push rax\n");
     return;
+  case ND_SUR:
+    code_gen(nd->lhs);
+    printf("  push 0\n");
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    printf("  cmp rax, rdi\n");
+    printf("  sete al\n");
+    printf("  movzb rax, al\n");
+    printf("  push rax\n");
+    return;
   default:;
   }
 
