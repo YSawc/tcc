@@ -152,6 +152,7 @@ typedef enum {
   ND_DIV,       //  /
   ND_EQ,        // ==
   ND_NEQ,       // !=
+  ND_TIL,       // ~
   ND_LT,        // <
   ND_LTE,       // <=
   ND_ADDR,      // &

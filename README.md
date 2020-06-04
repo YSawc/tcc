@@ -19,6 +19,7 @@ How to run test: `make test`
   - [x] array
     - [x] int
     - [x] string
+  - [x] tilde operator
   - [x] comparison operator
   - [x] boolean statement
   - [x] block handle in the same function

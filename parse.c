@@ -777,6 +777,10 @@ static Node *primary_expr(void) {
     return new_num(i);
   }
 
+  if (consume("~")) {
+    return new_uarray(ND_TIL, new_num(expect_number()));
+  }
+
   // case of string literal.
   if (token->kind == TK_STR) {
     // string should parsed as global variable because formed as data-section.

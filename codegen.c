@@ -152,6 +152,12 @@ void code_gen(Node *nd) {
     printf("  pop rax\n");
     printf("  jmp .L.return.%s\n", fn_nm);
     return;
+  case ND_TIL:
+    code_gen(nd->lhs);
+    printf("  pop rax\n");
+    printf("  not rax\n");
+    printf("  push rax\n");
+    return;
   default:;
   }
 
