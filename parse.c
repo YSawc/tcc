@@ -641,7 +641,8 @@ static Node *unary(void) {
   }
 }
 
-/* idx = primary "[" num "]" */
+/* idx          = primary "[" num "]" */
+/*              | num "?" cond ":" cond */
 static Node *idx(void) {
   Node *nd = primary_expr();
 
@@ -650,6 +651,20 @@ static Node *idx(void) {
     Node *nd = new_uarray(ND_REF, add_nd);
     expect(']');
     return nd;
+  }
+
+  if (consume("?")) {
+    if (nd->kind != ND_NUM)
+      error_at(token->str, "\"?:\" operator need number condition before.");
+    Node *l = new_num(expect_number());
+    expect(':');
+    Node *r = new_num(expect_number());
+    Node *i = new_nd(ND_IF);
+    i->ln = conditional_c++;
+    i->cond = nd;
+    i->then = l;
+    i->els = r;
+    return i;
   }
 
   return nd;
