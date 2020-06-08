@@ -71,12 +71,12 @@ int main() {
 	assert(21, add6(1, 2, 3, 4, 5, 6), "add6(1, 2, 3, 4, 5, 6)");
 	assert(3, ({ int i = 3; while(0) 0; i;}), "int i = 3; while(0) 0; i");
 	assert(10, ({ int i = 3; while(i<10) i=i+1; i;}), "int i = 3; while(i<10) i=i+1; i;");
-	assert(8, ({ int i = 6; sizeof(i); }), "int i = 6; sizeof(i);");
-	assert(8, sizeof(gi1), "sizeof(gi1)");
+	assert(4, ({ int i = 6; sizeof(i); }), "int i = 6; sizeof(i);");
+	assert(4, sizeof(gi1), "sizeof(gi1)");
 	assert(1, ({ char ca[4]; sizeof(ca); }), "char ca[4]; sizeof(ca);");
 	assert(3, ({ int x=3; *&x; }), "int x=3; *&x;");
-	assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;");
-	assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;");
+	/* assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;"); */
+	/* assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;"); */
 	assert(3, ({ int x=3; int y=5; *(&y-1); }), "int x=3; int y=5; *(&y-1);");
 	assert(5, ({ int x=3; int y=5; *(&x+1); }), "int x=3; int y=5; *(&x+1);");
 	assert(0, gi1, "gi1");
@@ -151,8 +151,8 @@ int main() {
 	assert(99, ({ struct { char c; char *s; }st; st.c='a'; st.s="bc"; st.s[1]; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.s[1];");
 	assert(98, ({ struct { int i; char *s; }st; st.i=2; st.s="bc"; st.s[0];}), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;");
 	assert(97, ({ struct { int i; char c; }st; st.i=3; st.c='a'; st.c; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;");
-	assert(9, ({ struct { int i; char c; }st; sizeof(st); }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;");
-	assert(17, ({ struct { int i; char c; char *s; }st; sizeof(st); }), "struct { int i; char c; char *s; }st; sizeof(st);");
+	assert(5, ({ struct { int i; char c; }st; sizeof(st); }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;");
+	assert(13, ({ struct { int i; char c; char *s; }st; sizeof(st); }), "struct { int i; char c; char *s; }st; sizeof(st);");
 	assert(0, ({ bool b = 0; b; }), "bool b = 0; b;");
 	assert(1, ({ bool b = 1; b; }), "bool b = 1; b;");
 	assert(1, ({ bool b = 3; b; }), "bool b = 3; b;");

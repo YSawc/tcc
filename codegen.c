@@ -1,5 +1,6 @@
 #include "tcc.h"
 
+/* static char *arg_regs[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"}; */
 static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // Pushes the given node's address to the stack.
@@ -25,6 +26,12 @@ static void load_8(void) {
   printf("  push rax\n");
 }
 
+static void load_32(void) {
+  printf("  pop rax\n");
+  printf("  movsxd rax, dword ptr [rax]\n");
+  printf("  push rax\n");
+}
+
 static void load_64(void) {
   printf("  pop rax\n");
   printf("  mov rax, [rax]\n");
@@ -42,7 +49,7 @@ static void store_val(Type *ty) {
     printf("  movzb rdi, dil\n");
     printf("  mov [rax], dil\n");
   } else
-    printf("  mov [rax], rdi\n");
+    printf("  mov [rax], edi\n");
   printf("  push rdi\n");
 }
 
@@ -59,7 +66,7 @@ void code_gen(Node *nd) {
     if (nd->ty->kind == TY_B || nd->ty->kind == TY_CHAR)
       load_8();
     else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
-      load_64();
+      load_32();
     return;
   case ND_ASSIGN:
     gen_var_addr(nd->lhs);
@@ -74,7 +81,7 @@ void code_gen(Node *nd) {
     if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by)
       load_8();
     else
-      load_64();
+      load_32();
     return;
   case ND_IF: {
     int c = nd->ln;
@@ -185,7 +192,7 @@ void code_gen(Node *nd) {
     if (lr_if_or(nd, TY_CHAR_ARR) || lr_if_or(nd, TY_D_BY))
       printf("  imul rdi, 1\n");
     else
-      printf("  imul rdi, 8\n");
+      printf("  imul rdi, 4\n");
     printf("  add rax, rdi\n");
     break;
   case ND_SUB:
@@ -195,7 +202,7 @@ void code_gen(Node *nd) {
     if (lr_if_or(nd, TY_INT_ARR) || lr_if_or(nd, TY_D_BY))
       printf("  imul rdi, 1\n");
     else
-      printf("  imul rdi, 8\n");
+      printf("  imul rdi, 4\n");
     printf("  sub rax, rdi\n");
     break;
   case ND_MUL:

@@ -6,7 +6,8 @@ static Var *stVars;
 static int conditional_c = 0;
 static Scope *scope;
 
-static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static char *arg_regs[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+/* static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"}; */
 
 char *fn_nm;
 void set_current_fn(char *c) { fn_nm = c; }
