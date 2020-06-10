@@ -79,8 +79,8 @@ typedef enum {
 typedef struct Type Type;
 struct Type {
   Kind kind;
-  int size;   // value of sizeof
-  Type *base; // base used when
+  int size;    // value of sizeof
+  Type *base;  // base used when
 };
 
 extern Type *ty_char;
@@ -122,6 +122,7 @@ struct Var {
   int len;        // length
   char *contents; // stirng contents
   int en;         // enumeration number
+  int al_size;    // allign size
 
   int ln; // label number
 };

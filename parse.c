@@ -57,6 +57,7 @@ static Member *new_m(char *nm) {
   Member *m = calloc(1, sizeof(Member));
   m->nm = nm;
   give_m_scope(m);
+  m->size = 0;
   return m;
 }
 
@@ -469,13 +470,31 @@ static Node *stmt(void) {
 
     char *nm = consume_ident()->str;
     Member *m = new_m(nm);
-    m->size = 0;
+    token = t;
+
+    // need align for specification of ABI */
+    int al_size;
+    while (!consume("}")) {
+      Type *ty = expect_ty();
+      if (al_size < ty->size)
+        al_size = ty->size;
+      if (consume("*"))
+        NULL;
+      consume_ident();
+      expect(';');
+    }
+
     token = t;
 
     while (!consume("}")) {
       Type *ty = expect_ty();
       Var *v = expect_init_v(ty);
-      m->size += v->ty->size;
+      if (v->ty->size < al_size) {
+        v->al_size = al_size;
+        m->size += al_size;
+      } else {
+        m->size += v->ty->size;
+      }
       v->is_m = true;
       v->m = m->nm;
       expect(';');

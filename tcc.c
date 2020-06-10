@@ -50,7 +50,10 @@ static void emit(void) {
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
     for (Var *v = fn->lv; v; v = v->next) {
-      o += v->ty->size;
+      if (v->al_size)
+        o += v->al_size;
+      else
+        o += v->ty->size;
       v->offset = o;
     }
 
