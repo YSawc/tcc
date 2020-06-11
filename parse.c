@@ -780,6 +780,8 @@ static Node *primary_expr(void) {
     int b = consume_base(token);
     if (b) {
       token = token->next;
+      if (consume("*"))
+        NULL;
       expect(')');
       return new_num(b);
     }

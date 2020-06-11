@@ -39,9 +39,15 @@ Token *consume_ident(void) {
 
 int consume_base(Token *tok) {
   if (!strcmp(tok->str, "char"))
-    return 1;
+    if (tok->next->str[0] == '*')
+      return 8;
+    else
+      return 1;
   else if (!strcmp(tok->str, "int") || !strcmp(tok->str, "float"))
-    return 4;
+    if (tok->next->str[0] == '*')
+      return 8;
+    else
+      return 4;
   else if (!strcmp(tok->str, "double"))
     return 8;
   return 0;
