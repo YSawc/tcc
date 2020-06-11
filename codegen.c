@@ -53,6 +53,25 @@ static void store_val(Type *ty) {
   printf("  push rdi\n");
 }
 
+static void postfix_gen(bool inc) {
+  printf("  pop rax\n");
+  if (inc)
+    printf("  add rax, 1\n");
+  else
+    printf("  sub rax, 1\n");
+  printf("  push rax\n");
+  printf("  pop rdi\n");
+  printf("  pop rax\n");
+  printf("  mov [rax], edi\n");
+  printf("  push rdi\n");
+  printf("  pop rax\n");
+  if (inc)
+    printf("  sub rax, 1\n");
+  else
+    printf("  add rax, 1\n");
+  printf("  push rax\n");
+}
+
 void code_gen(Node *nd) {
   switch (nd->kind) {
   case ND_NULL:
@@ -63,6 +82,8 @@ void code_gen(Node *nd) {
     return;
   case ND_VAR:
     gen_var_addr(nd);
+    if (nd->po)
+      printf("  push [rsp]\n");
     if (nd->ty->kind == TY_B || nd->ty->kind == TY_CHAR)
       load_8();
     else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
@@ -174,6 +195,16 @@ void code_gen(Node *nd) {
     printf("  sete al\n");
     printf("  movzb rax, al\n");
     printf("  push rax\n");
+    return;
+  case ND_INC:
+    nd->lhs->po = 1;
+    code_gen(nd->lhs);
+    postfix_gen(1);
+    return;
+  case ND_DEC:
+    nd->lhs->po = 1;
+    code_gen(nd->lhs);
+    postfix_gen(0);
     return;
   default:;
   }

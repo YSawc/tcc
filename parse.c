@@ -190,6 +190,7 @@ static Node *equality(void);
 static Node *relational(void);
 static Node *add(void);
 static Node *mul(void);
+static Node *postfix(void);
 static Node *unary(void);
 static Node *idx(void);
 static Node *primary_expr(void);
@@ -635,12 +636,24 @@ static Node *add(void) {
 
 /* mul = unary ( "*" unary | "/" unary )* */
 static Node *mul(void) {
-  Node *nd = unary();
+  Node *nd = postfix();
 
   if (consume("*")) {
     return new_binary(ND_MUL, nd, mul());
   } else if (consume("/")) {
     return new_binary(ND_DIV, nd, mul());
+  }
+
+  return nd;
+}
+
+static Node *postfix(void) {
+  Node *nd = unary();
+
+  if (consume("++")) {
+    return new_uarray(ND_INC, nd);
+  } else if (consume("--")) {
+    return new_uarray(ND_DEC, nd);
   }
 
   return nd;

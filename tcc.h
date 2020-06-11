@@ -79,8 +79,8 @@ typedef enum {
 typedef struct Type Type;
 struct Type {
   Kind kind;
-  int size;    // value of sizeof
-  Type *base;  // base used when
+  int size;   // value of sizeof
+  Type *base; // base used when
 };
 
 extern Type *ty_char;
@@ -158,6 +158,8 @@ typedef enum {
   ND_LTE,       // <=
   ND_ADDR,      // &
   ND_REF,       // *
+  ND_INC,       // ++
+  ND_DEC,       // --
   ND_SUR,       // !
   ND_RETURN,    // Return
   ND_IF,        // If
@@ -203,6 +205,8 @@ struct Node {
   Type *ty; // type of node.
 
   int ln; // label number
+
+  bool po; // postfix or
 
   char *contents; // label number
 };

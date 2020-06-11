@@ -20,6 +20,7 @@ How to run test: `make test`
     - [x] int
     - [x] string
   - [x] tilde operator
+  - [x] postfix operator
   - [x] comparison operator
   - [x] boolean statement
   - [x] block handle in the same function
