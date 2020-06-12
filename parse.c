@@ -216,7 +216,7 @@ static Node *expect_dec(Type *ty) {
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    Var *v = new_l_var(consume_ident()->str, ty);
+    Var *v = new_l_var(expect_ident(), ty);
     v->ln = conditional_c++;
     v->ty->base = ty;
     if (consume("=")) {
@@ -245,7 +245,7 @@ static Var *expect_init_v(Type *ty) {
     else
       error_at(token->str, "now not support initialize of reference of other "
                            "than char literal.");
-    Var *v = new_l_var(consume_ident()->str, ty);
+    Var *v = new_l_var(expect_ident(), ty);
     v->ln = conditional_c++;
     v->ty->base = ty;
     return v;
@@ -469,7 +469,7 @@ static Node *stmt(void) {
       token = token->next;
     }
 
-    char *nm = consume_ident()->str;
+    char *nm = expect_ident();
     Member *m = new_m(nm);
     token = t;
 
@@ -510,10 +510,10 @@ static Node *stmt(void) {
   if (consume("enum")) {
     expect('{');
     int e = 1;
-    Var *v = new_l_var(consume_ident()->str, ty_enum);
+    Var *v = new_l_var(expect_ident(), ty_enum);
     v->en = e++;
     while (consume(",")) {
-      Var *v = new_l_var(consume_ident()->str, ty_enum);
+      Var *v = new_l_var(expect_ident(), ty_enum);
       v->en = e++;
     }
     expect('}');
