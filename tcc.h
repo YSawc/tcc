@@ -53,7 +53,6 @@ Token *consume(char *op);
 Token *expect_str(char *str);
 char *expect_ident(void);
 Token *consume_ident(void);
-int parse_base(Token *tok);
 Token *tokenize(void);
 
 extern char *filename;
@@ -71,6 +70,8 @@ typedef enum {
   TY_CHAR_ARR,
   TY_INT_ARR,
   TY_D_BY, // type data byte
+  TY_FLT,
+  TY_DBL,
   TY_ENUM,
   TY_VOID,
   TY_PTR,
@@ -92,6 +93,8 @@ extern Type *ty_int_arr;
 extern Type *ty_enum;
 extern Type *ty_vd;
 extern Type *ty_d_by;
+extern Type *ty_flt;
+extern Type *ty_dbl;
 
 bool is_integer(Type *typ);
 Type *type_arr(Type *ty);

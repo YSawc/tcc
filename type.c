@@ -6,6 +6,8 @@ Type *ty_b = &(Type){TY_B, 1};
 Type *ty_char_arr = &(Type){TY_CHAR_ARR, 1};
 Type *ty_int_arr = &(Type){TY_INT_ARR, 4};
 Type *ty_d_by = &(Type){TY_D_BY, 8};
+Type *ty_flt = &(Type){TY_FLT, 4};
+Type *ty_dbl = &(Type){TY_DBL, 8};
 Type *ty_enum = &(Type){TY_ENUM, 4};
 Type *ty_vd = &(Type){TY_VOID, 0};
 

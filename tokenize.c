@@ -37,22 +37,6 @@ Token *consume_ident(void) {
   return t;
 }
 
-int parse_base(Token *tok) {
-  if (!strcmp(tok->str, "char"))
-    if (!strcmp(tok->next->str, "*"))
-      return 8;
-    else
-      return 1;
-  else if (!strcmp(tok->str, "int") || !strcmp(tok->str, "float"))
-    if (!strcmp(tok->next->str, "*"))
-      return 8;
-    else
-      return 4;
-  else if (!strcmp(tok->str, "double"))
-    return 8;
-  return 0;
-}
-
 // Expect ident.
 char *expect_ident(void) {
   if (token->kind != TK_IDENT)

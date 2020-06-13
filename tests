@@ -162,10 +162,14 @@ int main() {
 	assert(1, sizeof(char), "sizeof(char)");
 	assert(4, sizeof(int), "sizeof(int)");
 	assert(4, sizeof(float), "sizeof(float)");
+	assert(1, sizeof(bool), "sizeof(bool)");
+	/* assert(0, sizeof(void), "sizeof(void)"); */
 	assert(8, sizeof(double), "sizeof(double)");
 	assert(8, sizeof(char *), "sizeof(char *)");
 	assert(8, sizeof(int *), "sizeof(int *)");
 	assert(8, sizeof(float *), "sizeof(float *)");
+	assert(8, sizeof(bool *), "sizeof(bool *)");
+	assert(8, sizeof(void *), "sizeof(void *)");
 	assert(8, sizeof(double *), "sizeof(double *)");
 	{ void *v; } printf("void *v; => ;\n");
 	assert(-1, ~0, "~0");

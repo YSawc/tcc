@@ -252,25 +252,49 @@ static bool is_fn(void) {
 }
 
 static Type *look_ty(void) {
-  if (!strcmp(token->str, "int"))
-    return ty_int;
+  if (!strcmp(token->str, "int")) {
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
+    else
+      return ty_int;
+  }
   if (!strcmp(token->str, "char")) {
     if (!strcmp(token->next->str, "*"))
       return ty_d_by;
     else
       return ty_char;
   }
-  if (!strcmp(token->str, "bool"))
-    return ty_b;
-  if (!strcmp(token->str, "void"))
+  if (!strcmp(token->str, "float")) {
     if (!strcmp(token->next->str, "*"))
       return ty_d_by;
+    else
+      return ty_flt;
+  }
+  if (!strcmp(token->str, "bool")) {
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
+    else
+      return ty_b;
+  }
+  if (!strcmp(token->str, "void")) {
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
+    else
+      return ty_vd;
+  }
+  if (!strcmp(token->str, "double")) {
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
+    else
+      return ty_dbl;
+  }
   return NULL;
 }
 
 static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
-  if (ty == ty_char || ty == ty_int || ty == ty_b) {
+  if (ty == ty_char || ty == ty_int || ty == ty_b || ty == ty_flt ||
+      ty == ty_vd || ty == ty_dbl) {
     token = token->next;
   } else if (ty == ty_d_by || ty == ty_vd) {
     token = token->next->next;
@@ -797,13 +821,11 @@ static Node *primary_expr(void) {
     Node *nd = calloc(1, sizeof(Node));
     expect('(');
 
-    int b = parse_base(token);
-    if (b) {
-      token = token->next;
-      if (consume("*"))
-        ;
+    Type *ty = look_ty();
+    if (ty) {
+      consume_ty(ty);
       expect(')');
-      return new_num(b);
+      return new_num(ty->size);
     }
 
     Token *tok = consume_ident();
