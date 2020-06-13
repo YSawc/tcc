@@ -48,8 +48,11 @@ static void store_val(Type *ty) {
     printf("  setne dil\n");
     printf("  movzb rdi, dil\n");
     printf("  mov [rax], dil\n");
-  } else
+  } else if (ty->kind == TY_D_BY) {
+    printf("  mov [rax], rdi\n");
+  } else {
     printf("  mov [rax], edi\n");
+  }
   printf("  push rdi\n");
 }
 
@@ -90,7 +93,10 @@ void code_gen(Node *nd) {
       load_32();
     return;
   case ND_ASSIGN:
-    gen_var_addr(nd->lhs);
+    if (nd->lhs->kind == ND_MEM)
+      code_gen(nd->lhs);
+    else
+      gen_var_addr(nd->lhs);
     code_gen(nd->rhs);
     store_val(nd->lhs->ty);
     return;
@@ -99,7 +105,8 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
-    if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by)
+    /* if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by) */
+    if (nd->ty == ty_char || nd->ty == ty_char_arr)
       load_8();
     else
       load_32();
@@ -205,6 +212,21 @@ void code_gen(Node *nd) {
     nd->lhs->po = 1;
     code_gen(nd->lhs);
     postfix_gen(0);
+    return;
+  case ND_MEM:
+    printf("  lea rax, [rbp-%d]\n", nd->lhs->v->offset);
+    printf("  push rax\n");
+    printf("  pop rax\n");
+    printf("  add rax, %d\n", nd->rhs->v->mem_idx * nd->rhs->v->al_size);
+    printf("  push rax\n");
+    if (nd->lm) {
+      /* if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by) */
+      if (nd->ty == ty_char || nd->ty == ty_char_arr)
+        load_8();
+      else
+        load_32();
+    }
+    return;
     return;
   default:;
   }

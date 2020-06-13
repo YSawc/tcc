@@ -79,7 +79,9 @@ void typ_rev(Node *nd) {
   case ND_REF:
     nd->ty = nd->lhs->ty;
     return;
+  case ND_MEM:
+    nd->ty = nd->rhs->v->ty;
   default:
     return;
   }
-  }
+}

@@ -22,6 +22,7 @@ long expect_number(void);
 char *strTypeOfVar(char *s);
 char *strtoalpha(char *s);
 int lenIsDigit(char *s);
+char *singleCharToStr(char c);
 
 //
 // tokenize.c
@@ -52,7 +53,7 @@ Token *consume(char *op);
 Token *expect_str(char *str);
 char *expect_ident(void);
 Token *consume_ident(void);
-int consume_base(Token *tok);
+int parse_base(Token *tok);
 Token *tokenize(void);
 
 extern char *filename;
@@ -117,29 +118,24 @@ struct Var {
   int offset;     // Offset from RBP
   Type *ty;       // type
   bool is_local;  // true if local variable
-  bool is_m;      // ture if member of struct
   char *m;        // stirng contents
   int len;        // length
   char *contents; // stirng contents
   int en;         // enumeration number
   int al_size;    // allign size
 
-  int ln; // label number
-};
+  bool is_st;  // ture if base of struct
+  bool is_mem; // ture if member of struct
+  int mem_idx; // index as member base in struct
+  Var *mem;    // member of struct
 
-typedef struct Member Member;
-struct Member {
-  char *nm;   // Struct name
-  int offset; // Offset from RBP
-  Var *v;     // Variables (only referencable called dot statement)
-  int size;   // value of sizeof. total count of child variables.
+  int ln; // label number
 };
 
 typedef struct Scope Scope;
 struct Scope {
   Scope *next;
   Var *v;
-  Member *m;
 };
 
 // AST node
@@ -167,6 +163,7 @@ typedef enum {
   ND_ELS,       // If
   ND_EOF,       // EOF
   ND_VAR,       // Variable
+  ND_MEM,       // Member of struct
   ND_FNC,       // Function
   ND_ASSIGN,    // =
   ND_GNU_BLOCK, // ({})
@@ -207,6 +204,7 @@ struct Node {
   int ln; // label number
 
   bool po; // postfix or
+  bool lm; // load member or
 
   char *contents; // label number
 };

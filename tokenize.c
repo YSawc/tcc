@@ -37,14 +37,14 @@ Token *consume_ident(void) {
   return t;
 }
 
-int consume_base(Token *tok) {
+int parse_base(Token *tok) {
   if (!strcmp(tok->str, "char"))
-    if (tok->next->str[0] == '*')
+    if (!strcmp(tok->next->str, "*"))
       return 8;
     else
       return 1;
   else if (!strcmp(tok->str, "int") || !strcmp(tok->str, "float"))
-    if (tok->next->str[0] == '*')
+    if (!strcmp(tok->next->str, "*"))
       return 8;
     else
       return 4;
@@ -184,7 +184,7 @@ Token *tokenize(void) {
     // Detector in list of reserved single letter
     for (int i = 0; i < sizeof(sSym) / sizeof(*sSym); i++) {
       if (*p == sSym[i]) {
-        cur = new_token(TK_RESERVED, cur, p, 1);
+        cur = new_token(TK_RESERVED, cur, singleCharToStr(*p), 1);
         p++;
         continue;
       }

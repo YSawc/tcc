@@ -59,6 +59,7 @@ void error_at(char *loc, char *fmt, ...) {
 }
 
 bool startswith(char *p, char *q) { return strncmp(p, q, strlen(q)) == 0; }
+
 void expect(char op) {
   if (token->str[0] != op)
     error_at(token->str, "%c not detected", op);
@@ -105,4 +106,11 @@ int lenIsDigit(char *s) {
     }
   }
   return len;
+}
+
+char *singleCharToStr(char c) {
+  char *s = malloc(2);
+  s[0] = c;
+  s[1] = '\0';
+  return s;
 }

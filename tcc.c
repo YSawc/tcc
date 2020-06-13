@@ -10,6 +10,7 @@ static void emit_fn(Function *fn) {
   printf("  mov rbp, rsp\n");
 }
 
+static void emit_bss(void) { printf(".bss\n"); }
 static void emit_data(void) { printf(".data\n"); }
 static void emit_text(void) { printf(".text\n"); }
 
@@ -39,22 +40,33 @@ static void emit(void) {
   token = tokenize();
   Program *prog = gen_program();
 
+  emit_bss();
   emit_data();
   emit_globals_data(prog);
   emit_text();
 
   // Variable created this phase, so assign each variable with offset.
-  assign_var_offset(prog->fn);
+  /* assign_var_offset(prog->fn); */
 
   for (Function *fn = prog->fn; fn; fn = fn->next) {
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
     for (Var *v = fn->lv; v; v = v->next) {
-      if (v->al_size)
-        o += v->al_size;
-      else
+      if (v->is_st) {
+        for (Var *m = v->mem; m; m = m->next)
+          o += m->ty->size;
+        /* for (Var *m = v->mem; m; m = m->next) { */
+        /* o += m->ty->size; */
+        /* m->offset = o; */
+        /* } */
+        // struct itself is settled offset same as first member.
+        /* v->offset = v->mem->offset; */
+        v->offset = o;
+      } else {
+        // data byte not assigned offset but labeled in section of data.
         o += v->ty->size;
-      v->offset = o;
+        v->offset = o;
+      }
     }
 
     emit_fn(fn);

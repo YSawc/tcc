@@ -19,13 +19,6 @@ static void give_scope(Var *v) {
   scope = sc;
 }
 
-static void give_m_scope(Member *m) {
-  Scope *sc = calloc(1, sizeof(Scope));
-  sc->m = m;
-  sc->next = scope;
-  scope = sc;
-}
-
 static Var *new_l_var(char *nm, Type *ty) {
   if (!ty)
     error_at(token->str, "expected type, but not detected.");
@@ -51,14 +44,6 @@ static Var *new_g_var(char *nm, Type *ty) {
 
   give_scope(v);
   return v;
-}
-
-static Member *new_m(char *nm) {
-  Member *m = calloc(1, sizeof(Member));
-  m->nm = nm;
-  give_m_scope(m);
-  m->size = 0;
-  return m;
 }
 
 static Var *new_arr_var(char *nm, int l, Type *ty) {
@@ -108,7 +93,7 @@ static Var *new_str(void) {
 static Var *find_var(Token *tok) {
   for (Scope *s = scope; s; s = s->next) {
     Var *v = s->v;
-    if (!v || v->is_m)
+    if (v->is_st)
       continue;
     if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
       return v;
@@ -116,28 +101,22 @@ static Var *find_var(Token *tok) {
   return NULL;
 }
 
-// find member scope in a struct
-static Member *find_mem(Token *tok) {
+static Var *find_st(Token *tok) {
   for (Scope *s = scope; s; s = s->next) {
-    Member *m = s->m;
-    if (!m)
+    Var *v = s->v;
+    if (!v->is_st)
       continue;
-    if (strlen(m->nm) == tok->len && !strncmp(m->nm, tok->str, tok->len))
-      return m;
+    if (strlen(v->nm) == tok->len && !strncmp(v->nm, tok->str, tok->len))
+      return v;
   }
   return NULL;
 }
 
 // find variable scope in a struct
-static Var *find_mem_var(Member *m, Token *tok) {
-  for (Scope *s = scope; s; s = s->next) {
-    Var *v = s->v;
-    if (!v || !v->is_m)
-      continue;
-    if (v->m == m->nm && strlen(v->nm) == tok->len &&
-        !strncmp(v->nm, tok->str, tok->len))
-      return v;
-  }
+static Var *find_mem(Var *st, Token *tok) {
+  for (Var *m = st->mem; m; m = m->next)
+    if (strlen(m->nm) == tok->len && !strncmp(m->nm, tok->str, tok->len))
+      return m;
   return NULL;
 }
 
@@ -208,17 +187,14 @@ static Node *expect_dec(Type *ty) {
     return nd;
   }
 
-  if (consume("*")) {
-    if (ty == ty_char)
-      ty = ty_d_by;
-    else if (ty == ty_vd)
-      ty = ty_vd;
-    else
-      error_at(token->str, "now not support initialize of reference of other "
-                           "than char literal.");
-    Var *v = new_l_var(expect_ident(), ty);
+  /* if (consume("*")) { */
+  if (ty == ty_d_by || ty == ty_vd) {
+    Var *v = new_l_var(tok->str, ty);
     v->ln = conditional_c++;
-    v->ty->base = ty;
+    if (ty == ty_d_by)
+      v->ty->base = ty_char;
+    else
+      v->ty->base = ty;
     if (consume("=")) {
       Node *nd = new_binary(ND_ASSIGN, new_var_nd(v), primary_expr());
       return new_expr(nd);
@@ -385,9 +361,18 @@ Program *gen_program(void) {
 void assign_var_offset(Function *fn) {
   int i = 0;
   for (Var *v = fn->lv; v; v = v->next) {
-    // data byte not assigned offset but labeled in sectio of data.
-    i += v->ty->size;
-    v->offset = i;
+    if (v->is_st) {
+      for (Var *m = v->mem; m; m = m->next) {
+        i += m->ty->size;
+        m->offset = i;
+      }
+      // struct itself is settled offset same as first member.
+      v->offset = v->mem->offset;
+    } else {
+      // data byte not assigned offset but labeled in section of data.
+      i += v->ty->size;
+      v->offset = i;
+    }
   }
 }
 
@@ -469,8 +454,7 @@ static Node *stmt(void) {
       token = token->next;
     }
 
-    char *nm = expect_ident();
-    Member *m = new_m(nm);
+    Var *st_v = expect_init_v(ty_vd);
     token = t;
 
     // need align for specification of ABI */
@@ -479,31 +463,40 @@ static Node *stmt(void) {
       Type *ty = expect_ty();
       if (al_size < ty->size)
         al_size = ty->size;
-      if (consume("*"))
-        NULL;
       consume_ident();
       expect(';');
     }
 
     token = t;
+    Var *cur = NULL;
 
+    int mem_idx = 0;
     while (!consume("}")) {
       Type *ty = expect_ty();
-      Var *v = expect_init_v(ty);
+      Var *v = calloc(1, sizeof(Var));
+      v->is_mem = true;
+      v->mem_idx = mem_idx++;
+      v->ty = ty;
+      v->nm = expect_ident();
+      v->next = cur;
+      cur = v;
+
       if (v->ty->size < al_size) {
         v->al_size = al_size;
-        m->size += al_size;
+        st_v->ty->size += al_size;
       } else {
-        m->size += v->ty->size;
+        st_v->ty->size += v->ty->size;
       }
-      v->is_m = true;
-      v->m = m->nm;
+
       expect(';');
     }
     consume_ident();
+
+    st_v->mem = cur;
+    st_v->is_st = true;
+    st_v->is_local = true;
+    st_v->al_size = al_size;
     expect(';');
-    /* m->v = stVars; */
-    /* stVars = NULL; */
     return new_nd(ND_NULL);
   }
 
@@ -754,10 +747,10 @@ static Node *primary_expr(void) {
 
     // access member of struct.
     if (consume(".")) {
-      Member *m = find_mem(tok);
-      if (!m)
+      Var *st = find_st(tok);
+      if (!st)
         error_at(token->str, "can't handle with undefined struct.");
-      Var *lv = find_mem_var(m, consume_ident());
+      Var *lv = find_mem(st, consume_ident());
       if (!lv)
         error_at(token->str,
                  "can't handle with undefined variable in member of struct.");
@@ -768,7 +761,21 @@ static Node *primary_expr(void) {
           return new_binary(ND_ASSIGN, new_var_nd(lv), new_var_nd(rv));
         }
       }
-      return new_var_nd(lv);
+
+      Node *l = new_nd(ND_NULL);
+      l->v = st;
+      Node *r = new_nd(ND_NULL);
+      r->v = lv;
+      Node *nd = new_binary(ND_MEM, l, r);
+
+      Token *t = token;
+      if (!consume("=")) {
+        nd->lm = true;
+      } else {
+        token = t;
+      }
+
+      return nd;
     }
 
     // find variable.
@@ -790,11 +797,11 @@ static Node *primary_expr(void) {
     Node *nd = calloc(1, sizeof(Node));
     expect('(');
 
-    int b = consume_base(token);
+    int b = parse_base(token);
     if (b) {
       token = token->next;
       if (consume("*"))
-        NULL;
+        ;
       expect(')');
       return new_num(b);
     }
@@ -806,9 +813,9 @@ static Node *primary_expr(void) {
     if (v) {
       nd = new_num(v->ty->size);
     } else {
-      Member *m = find_mem(tok);
-      if (m) {
-        nd = new_num(m->size);
+      Var *st = find_st(tok);
+      if (st) {
+        nd = new_num(st->ty->size);
       } else {
         error_at(token->str, "expected declaration variable.");
       }
