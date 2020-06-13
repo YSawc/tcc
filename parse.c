@@ -187,8 +187,7 @@ static Node *expect_dec(Type *ty) {
     return nd;
   }
 
-  /* if (consume("*")) { */
-  if (ty == ty_d_by || ty == ty_vd) {
+  if (ty == ty_d_by) {
     Var *v = new_l_var(tok->str, ty);
     v->ln = conditional_c++;
     if (ty == ty_d_by)
@@ -216,7 +215,7 @@ static Var *expect_init_v(Type *ty) {
   Token *tok = consume_ident();
 
   if (consume("*")) {
-    if (ty == ty_char)
+    if (ty == ty_char || ty == ty_vd)
       ty = ty_d_by;
     else
       error_at(token->str, "now not support initialize of reference of other "
@@ -264,15 +263,16 @@ static Type *look_ty(void) {
   if (!strcmp(token->str, "bool"))
     return ty_b;
   if (!strcmp(token->str, "void"))
-    return ty_vd;
+    if (!strcmp(token->next->str, "*"))
+      return ty_d_by;
   return NULL;
 }
 
 static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
-  if (ty == ty_char || ty == ty_int || ty == ty_b || ty == ty_vd) {
+  if (ty == ty_char || ty == ty_int || ty == ty_b) {
     token = token->next;
-  } else if (ty == ty_d_by) {
+  } else if (ty == ty_d_by || ty == ty_vd) {
     token = token->next->next;
   }
 }

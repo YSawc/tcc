@@ -167,7 +167,7 @@ int main() {
 	assert(8, sizeof(int *), "sizeof(int *)");
 	assert(8, sizeof(float *), "sizeof(float *)");
 	assert(8, sizeof(double *), "sizeof(double *)");
-	/* { void *v; } printf("void *v; => ;\n"); */
+	{ void *v; } printf("void *v; => ;\n");
 	assert(-1, ~0, "~0");
 	assert(-2, ~1, "~1");
 	assert(-255, ~254, "~254");
