@@ -46,8 +46,6 @@ static void emit(void) {
   emit_text();
 
   // Variable created this phase, so assign each variable with offset.
-  /* assign_var_offset(prog->fn); */
-
   for (Function *fn = prog->fn; fn; fn = fn->next) {
     int o = 0; // offset for variables.
     // emit offset to each variables count up within starts from args data.
@@ -55,12 +53,7 @@ static void emit(void) {
       if (v->is_st) {
         for (Var *m = v->mem; m; m = m->next)
           o += m->ty->size;
-        /* for (Var *m = v->mem; m; m = m->next) { */
-        /* o += m->ty->size; */
-        /* m->offset = o; */
-        /* } */
         // struct itself is settled offset same as first member.
-        /* v->offset = v->mem->offset; */
         v->offset = o;
       } else {
         // data byte not assigned offset but labeled in section of data.

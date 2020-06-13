@@ -105,7 +105,6 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
-    /* if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by) */
     if (nd->ty == ty_char || nd->ty == ty_char_arr)
       load_8();
     else
@@ -220,7 +219,6 @@ void code_gen(Node *nd) {
     printf("  add rax, %d\n", nd->rhs->v->mem_idx * nd->rhs->v->al_size);
     printf("  push rax\n");
     if (nd->lm) {
-      /* if (nd->ty == ty_char || nd->ty == ty_char_arr || nd->ty == ty_d_by) */
       if (nd->ty == ty_char || nd->ty == ty_char_arr)
         load_8();
       else
