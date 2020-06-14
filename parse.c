@@ -770,7 +770,7 @@ static Node *primary_expr(void) {
     }
 
     // access member of struct.
-    if (consume(".")) {
+    if (consume(".") || (consume("->"))) {
       Var *st = find_st(tok);
       if (!st)
         error_at(token->str, "can't handle with undefined struct.");
