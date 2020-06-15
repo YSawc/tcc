@@ -243,9 +243,11 @@ static Node *func_args(void) {
   return head;
 }
 
+static Type *expect_ty(void);
+
 static bool is_fn(void) {
   Token *tok = token;
-  expect_str("int");
+  expect_ty();
   bool isfunc = consume_ident() && consume("(");
   token = tok;
   return isfunc;
@@ -296,7 +298,7 @@ static void consume_ty(Type *ty) {
   if (ty == ty_char || ty == ty_int || ty == ty_b || ty == ty_flt ||
       ty == ty_vd || ty == ty_dbl) {
     token = token->next;
-  } else if (ty == ty_d_by || ty == ty_vd) {
+  } else if (ty == ty_d_by) {
     token = token->next->next;
   }
 }
@@ -318,7 +320,9 @@ static Function *fn(void) {
   Node *cur_nd = &head_nd;
 
   // in this scope, be in internal of fn.
-  expect_str("int");
+
+  expect_ty();
+  /* expect_str("int"); */
   fn_nm = expect_ident();
   expect('(');
   if (!consume(")")) {

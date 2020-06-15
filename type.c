@@ -9,7 +9,7 @@ Type *ty_d_by = &(Type){TY_D_BY, 8};
 Type *ty_flt = &(Type){TY_FLT, 4};
 Type *ty_dbl = &(Type){TY_DBL, 8};
 Type *ty_enum = &(Type){TY_ENUM, 4};
-Type *ty_vd = &(Type){TY_VOID, 0};
+Type *ty_vd = &(Type){TY_VOID, 1};
 
 bool is_integer(Type *ty) { return ty->kind == TY_INT; }
 
