@@ -22,8 +22,11 @@ static void verror_at(char *loc, char *fmt, va_list ap) {
     line--;
 
   char *end = loc;
-  while (*end != '\n')
+  int l = strlen(end);
+  for (int i = 0; i < l; i++) {
+  /* while (*end != '\n') { */
     end++;
+  }
 
   // Get a line number.
   int line_num = 1;

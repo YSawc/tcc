@@ -2,7 +2,7 @@ CFLAGS=-std=c11 -g -static -fno-common
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
-default: tcc
+default: clean tcc
 
 tcc: $(OBJS)
 	$(CC) -o $@ $? $(LDFLAGS)

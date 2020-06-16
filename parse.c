@@ -322,7 +322,6 @@ static Function *fn(void) {
   // in this scope, be in internal of fn.
 
   expect_ty();
-  /* expect_str("int"); */
   fn_nm = expect_ident();
   expect('(');
   if (!consume(")")) {
