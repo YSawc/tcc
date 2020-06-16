@@ -10,6 +10,14 @@ static void emit_fn(Function *fn) {
   printf("  mov rbp, rsp\n");
 }
 
+static void emit_globals_beforehand(Program *prog) {
+  if (!prog->gv)
+    return;
+  for (Var *v = prog->gv; v; v = v->next)
+    if (v->ty == ty_int)
+      printf(".global %s\n", v->nm);
+}
+
 static void emit_bss(void) { printf(".bss\n"); }
 static void emit_data(void) { printf(".data\n"); }
 static void emit_text(void) { printf(".text\n"); }
@@ -19,9 +27,17 @@ static void emit_globals_data(Program *prog) {
     return;
   for (Var *v = prog->gv; v; v = v->next) {
     if (v->ty == ty_int) {
+      printf(".align %d\n", v->ty->size);
       printf("%s:\n", v->nm);
       printf("  .zero %d\n", v->ty->size);
-    } else if (v->contents) {
+    }
+  }
+
+  emit_data();
+
+  for (Var *v = prog->gv; v; v = v->next) {
+    if (v->contents) {
+      printf(".align 1\n");
       printf(".L.data.%d:\n", v->ln);
       for (int i = 0; i < v->len; i++)
         printf("  .byte %d\n", v->contents[i]);
@@ -40,8 +56,8 @@ static void emit(void) {
   token = tokenize();
   Program *prog = gen_program();
 
+  emit_globals_beforehand(prog);
   emit_bss();
-  emit_data();
   emit_globals_data(prog);
   emit_text();
 
