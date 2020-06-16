@@ -1,6 +1,9 @@
 int gi1;
 int gi2;
 
+int printf(const char *s, ...);
+void exit(int i);
+
 int vd();
 int argf(int a, int b, int c);
 

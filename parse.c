@@ -201,6 +201,9 @@ static Node *expect_dec(Type *ty) {
     return new_nd(ND_NULL);
   }
 
+  if (ty == ty_uk)
+    return new_nd(ND_NULL);
+
   Var *v = new_l_var(tok->str, ty);
   // In this case, it only declared but not assigned.
   if (consume("=")) {
@@ -254,6 +257,8 @@ static bool is_fn(void) {
 }
 
 static Type *look_ty(void) {
+  if (!consume("const"))
+    NULL;
   if (!strcmp(token->str, "int")) {
     if (!strcmp(token->next->str, "*"))
       return ty_d_by;
@@ -290,13 +295,15 @@ static Type *look_ty(void) {
     else
       return ty_dbl;
   }
+  if (!strcmp(token->str, "..."))
+    return ty_uk;
   return NULL;
 }
 
 static void consume_ty(Type *ty) {
   // Detector in list of reserved multiple letter string
   if (ty == ty_char || ty == ty_int || ty == ty_b || ty == ty_flt ||
-      ty == ty_vd || ty == ty_dbl) {
+      ty == ty_vd || ty == ty_dbl || ty == ty_uk) {
     token = token->next;
   } else if (ty == ty_d_by) {
     token = token->next->next;
@@ -336,11 +343,8 @@ static Function *fn(void) {
     expect(')');
   }
 
-  if (startswith(token->str, ";")) {
-    expect(';');
-    fn->nm = fn_nm;
-    return fn;
-  }
+  if (consume(";"))
+    return NULL;
 
   expect('{');
   while (!consume("}")) {
@@ -374,8 +378,11 @@ Program *gen_program(void) {
 
   while (!at_eof()) {
     Scope *sc = scope;
-    fn_cur->next = fn();
-    fn_cur = fn_cur->next;
+    Function *f = fn();
+    if (f) {
+      fn_cur->next = f;
+      fn_cur = fn_cur->next;
+    }
     scope = sc;
   }
 
