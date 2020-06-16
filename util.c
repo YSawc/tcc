@@ -16,7 +16,6 @@ void error(char *fmt, ...) {
 static void verror_at(char *loc, char *fmt, va_list ap) {
 
   // Find a line containing `loc`.
-  fprintf(stderr, "%s\n", user_input);
   char *line = loc;
   while (user_input < line && line[-1] != '\n')
     line--;
@@ -24,7 +23,6 @@ static void verror_at(char *loc, char *fmt, va_list ap) {
   char *end = loc;
   int l = strlen(end);
   for (int i = 0; i < l; i++) {
-  /* while (*end != '\n') { */
     end++;
   }
 
@@ -36,7 +34,7 @@ static void verror_at(char *loc, char *fmt, va_list ap) {
 
   // Print out the line.
   int indent = fprintf(stderr, "%s:%d: ", filename, line_num);
-  fprintf(stderr, "%.*s\n", (int)(end - line), line);
+  fprintf(stderr, "%s", user_input);
 
   // Show the error message.
   int pos = loc - line + indent;
