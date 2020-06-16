@@ -272,7 +272,7 @@ static Type *look_ty(void) {
     else
       return ty_flt;
   }
-  if (!strcmp(token->str, "bool")) {
+  if (!strcmp(token->str, "_Bool")) {
     if (!strcmp(token->next->str, "*"))
       return ty_d_by;
     else
