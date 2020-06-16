@@ -91,6 +91,8 @@ void code_gen(Node *nd) {
       load_8();
     else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
       load_32();
+    else if (nd->ty->kind != TY_CHAR_ARR && nd->ty->base == ty_d_by)
+      load_64();
     return;
   case ND_ASSIGN:
     if (nd->lhs->kind == ND_MEM)
@@ -105,7 +107,8 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
-    if (nd->ty == ty_char || nd->ty == ty_char_arr)
+    if (nd->ty == ty_char || nd->ty == ty_char_arr ||
+        (nd->ty == ty_d_by && nd->ty->base))
       load_8();
     else
       load_32();
