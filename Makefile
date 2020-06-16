@@ -1,8 +1,8 @@
 CFLAGS=-std=c11 -g -static -fno-common
-SRCS=$(wildcard *.c)
+SRCS=$(filter-out tests.c, $(wildcard *.c))
 OBJS=$(SRCS:.c=.o)
 
-default: clean tcc
+default: clean tcc test_c
 
 tcc: $(OBJS)
 	$(CC) -o $@ $? $(LDFLAGS)
@@ -11,6 +11,11 @@ $(OBJS): tcc.h
 
 test: tcc
 	./tcc tests > tmp.s
+	gcc -static -o tmp tmp.s
+	./tmp
+
+test_c: tcc
+	./tcc tests.c > tmp.s
 	gcc -static -o tmp tmp.s
 	./tmp
 
