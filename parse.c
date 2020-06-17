@@ -477,6 +477,8 @@ static Node *phase_typ_rev(void) {
 /*      | "if" "(" cond ")" stmt ("else" stmt)?  */
 /*      | "while" "(" cond ")" stmt ";" */
 /*      | "struct" "{" (cond)? "}" Ident ";" */
+/*      | "emum" "{" (Ident)? "}" ";" */
+/*      | "typedef" type Ident ";" */
 /*      | "{" stmt* "}" */
 static Node *stmt(void) {
   if (consume("return")) {

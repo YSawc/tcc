@@ -28,6 +28,7 @@ How to run test: `make test`
   - [x] if, while and for statements
   - [x] local assignment
   - [x] char literal
+  - [x] typedef operator
   - [x] pointer and reference operator
   - [x] gnu expression statements
   - [ ] 'hello world'
