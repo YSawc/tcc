@@ -39,3 +39,7 @@ How to run test: `make test`
 - other task
   - [x] test in C ( rewite test written shell in C )
   - [ ] construct environment with docker
+
+## Dependencies
+
+- gcc version 7.5.0 (Ubuntu 7.5.0-3ubuntu1~18.04)
