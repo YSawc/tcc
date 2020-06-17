@@ -2,9 +2,9 @@
 
 static Var *lVars;
 static Var *gVars;
-static Var *stVars;
 static int conditional_c = 0;
 static Scope *scope;
+static ScopeT *scopeT;
 
 static char *arg_regs[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 /* static char *arg_regs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"}; */
@@ -17,6 +17,13 @@ static void give_scope(Var *v) {
   sc->v = v;
   sc->next = scope;
   scope = sc;
+}
+
+static void give_scopet(Type *ty) {
+  ScopeT *sct = calloc(1, sizeof(ScopeT));
+  sct->ty = ty;
+  sct->next = scopeT;
+  scopeT = sct;
 }
 
 static Var *new_l_var(char *nm, Type *ty) {
@@ -117,6 +124,26 @@ static Var *find_mem(Var *st, Token *tok) {
   for (Var *m = st->mem; m; m = m->next)
     if (strlen(m->nm) == tok->len && !strncmp(m->nm, tok->str, tok->len))
       return m;
+  return NULL;
+}
+
+static Type *new_ty(char *nm, Type *ty) {
+  Type *t = calloc(1, sizeof(Type));
+  t->nm = nm;
+  t->size = ty->size;
+  t->kind = ty->kind;
+
+  give_scopet(t);
+  return t;
+}
+
+static Type *find_ty() {
+  for (ScopeT *st = scopeT; st; st = st->next) {
+    Type *ty = st->ty;
+    if (strlen(ty->nm) == token->len &&
+        !strncmp(ty->nm, token->str, token->len))
+      return ty;
+  }
   return NULL;
 }
 
@@ -378,12 +405,14 @@ Program *gen_program(void) {
 
   while (!at_eof()) {
     Scope *sc = scope;
+    ScopeT *sct = scopeT;
     Function *f = fn();
     if (f) {
       fn_cur->next = f;
       fn_cur = fn_cur->next;
     }
     scope = sc;
+    scopeT = sct;
   }
 
   Program *prog = calloc(1, sizeof(Program));
@@ -552,11 +581,13 @@ static Node *stmt(void) {
     Node *cur = &head;
 
     Scope *sc = scope;
+    ScopeT *sct = scopeT;
     while (!consume("}")) {
       cur->next = stmt();
       cur = cur->next;
     }
     scope = sc;
+    scopeT = sct;
 
     Node *nd = new_nd(ND_BLOCK);
     nd->block = head.next;
@@ -569,6 +600,13 @@ static Node *stmt(void) {
     Node *nd = expect_dec(ty);
     expect(';');
     return nd;
+  }
+
+  if (consume("typedef")) {
+    Type *ty = expect_ty();
+    new_ty(expect_ident(), ty);
+    expect(';');
+    return new_nd(ND_NULL);
   }
 
   Node *nd = new_expr(assign());
@@ -747,11 +785,13 @@ static Node *primary_expr(void) {
       Node *cur = &head;
 
       Scope *sc = scope;
+      ScopeT *sct = scopeT;
       while (!consume("}")) {
         cur->next = stmt();
         cur = cur->next;
       }
       scope = sc;
+      scopeT = sct;
 
       expect(')');
       if (cur->kind != ND_EXPR)
@@ -836,6 +876,13 @@ static Node *primary_expr(void) {
       consume_ty(ty);
       expect(')');
       return new_num(ty->size);
+    }
+
+    Type *tt = find_ty();
+    if (tt) {
+      token = token->next;
+      expect(')');
+      return new_num(tt->size);
     }
 
     Token *tok = consume_ident();

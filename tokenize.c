@@ -113,15 +113,16 @@ Token *tokenize(void) {
   Token *cur = &head;
 
   // list of reserved multiple .symbol
-  static char *mSym[] = {"==", "!=", "<=", "=>", ">=", "=<", "->", "++", "--", "..."};
+  static char *mSym[] = {
+      "==", "!=", "<=", "=>", ">=", "=<", "->", "++", "--", "..."};
 
   // list of reserved single letter.symbol
   static char sSym[] = {'+', '-', '*', '&', '/', '(', ')', '{',  '}', '[', ']',
                         ';', '?', ':', '=', '<', '>', ',', '\'', '.', '~', '!'};
 
   // list of reserved multiple letter.string
-  static char *mSt[] = {"if",   "else",   "while",  "int",  "char",
-                        "void", "sizeof", "struct", "_Bool", "enum"};
+  static char *mSt[] = {"if",     "else",   "while", "int",  "char",   "void",
+                        "sizeof", "struct", "_Bool", "enum", "typedef"};
 
   while (*p) {
 

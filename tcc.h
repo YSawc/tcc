@@ -84,6 +84,7 @@ struct Type {
   Kind kind;
   int size;   // value of sizeof
   Type *base; // base used when
+  char *nm;
 };
 
 extern Type *ty_char;
@@ -141,6 +142,12 @@ typedef struct Scope Scope;
 struct Scope {
   Scope *next;
   Var *v;
+};
+
+typedef struct ScopeT ScopeT;
+struct ScopeT {
+  ScopeT *next;
+  Type *ty;
 };
 
 // AST node

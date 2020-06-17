@@ -191,6 +191,13 @@ int main() {
 	assert(1, ({ int i; i++; i; }), "int i; i++; i;");
 	assert(1, ({ int i=1; i--; }), "int i=1; i--;");
 	assert(0, ({ int i=1; i--; i; }), "int i=1; i--; i;");
+	/* assert(3, ({ typedef int ti; ti i = 3; i; }), "typedef int ti; ti i = 3; i;"); */
+	assert(1, ({ typedef char tc; sizeof(tc); }), "typedef char tc; sizeof(tc);");
+	assert(4, ({ typedef int ti; sizeof(ti); }), "typedef int ti; sizeof(ti);");
+	assert(4, ({ typedef float tf; sizeof(tf); }), "typedef float tf; sizeof(tf);");
+	assert(1, ({ typedef _Bool tb; sizeof(tb); }), "typedef _Bool tb; sizeof(tb);");
+	/* assert(1, ({ typedef void tv; sizeof(tv); }), "typedef void tb; sizeof(tv);"); */
+	assert(8, ({ typedef double td; sizeof(td); }), "typedef double td; sizeof(td);");
 	/* assert(0, 0, "0"); */
 	/* assert(0, ({ 0; }), "0"); */
 	return 0;

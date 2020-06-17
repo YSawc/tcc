@@ -219,7 +219,7 @@ void code_gen(Node *nd) {
     printf("  lea rax, [rbp-%d]\n", nd->lhs->v->offset);
     printf("  push rax\n");
     printf("  pop rax\n");
-    printf("  add rax, %d\n", nd->rhs->v->mem_idx * nd->rhs->v->al_size);
+    printf("  add rax, %d\n", nd->rhs->v->mem_idx * nd->lhs->v->al_size);
     printf("  push rax\n");
     if (nd->lm) {
       if (nd->ty == ty_char || nd->ty == ty_char_arr)
