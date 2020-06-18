@@ -523,7 +523,7 @@ static Node *stmt(void) {
     token = t;
 
     // need align for specification of ABI */
-    int al_size;
+    int al_size = 0;
     while (!consume("}")) {
       Type *ty = expect_ty();
       if (al_size < ty->size)
@@ -546,19 +546,13 @@ static Node *stmt(void) {
       v->next = cur;
       cur = v;
 
-      if (v->ty->size < al_size) {
-        v->al_size = al_size;
-        st_v->ty->size += al_size;
-      } else {
-        st_v->ty->size += v->ty->size;
-      }
-
       expect(';');
     }
     consume_ident();
 
     st_v->mem = cur;
     st_v->is_st = true;
+    st_v->ty->size = mem_idx * al_size;
     st_v->is_local = true;
     st_v->al_size = al_size;
     expect(';');
@@ -600,6 +594,14 @@ static Node *stmt(void) {
   if (ty) {
     consume_ty(ty);
     Node *nd = expect_dec(ty);
+    expect(';');
+    return nd;
+  }
+
+  Type *tt = find_ty();
+  if (tt) {
+    token = token->next;
+    Node *nd = expect_dec(tt);
     expect(';');
     return nd;
   }

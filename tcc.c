@@ -23,8 +23,10 @@ static void emit_data(void) { printf(".data\n"); }
 static void emit_text(void) { printf(".text\n"); }
 
 static void emit_globals_data(Program *prog) {
-  if (!prog->gv)
+  if (!prog->gv) {
+    emit_data();
     return;
+  }
   for (Var *v = prog->gv; v; v = v->next) {
     if (v->ty == ty_int) {
       printf(".align %d\n", v->ty->size);
