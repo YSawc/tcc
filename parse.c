@@ -835,8 +835,9 @@ static Node *primary_expr(void) {
 
       if (lv->ty == ty_d_by) {
         if (consume("=")) {
-          Var *rv = new_str();
-          return new_binary(ND_ASSIGN, new_var_nd(lv), new_var_nd(rv));
+          lv->ln = conditional_c; // same offset as next it of str.
+          new_str();
+          return new_binary(ND_MEM, new_var_nd(st), new_var_nd(lv));
         }
       }
 

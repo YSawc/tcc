@@ -87,12 +87,18 @@ void code_gen(Node *nd) {
     gen_var_addr(nd);
     if (nd->po)
       printf("  push [rsp]\n");
-    if (nd->ty->kind == TY_B || nd->ty->kind == TY_CHAR)
+    if (nd->ty->kind == TY_B || nd->ty->kind == TY_CHAR) {
       load_8();
-    else if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR)
+      return;
+    }
+    if (nd->ty->kind != TY_INT_ARR && nd->ty->kind != TY_CHAR_ARR) {
       load_32();
-    else if (nd->ty->kind != TY_CHAR_ARR && nd->ty->base == ty_d_by)
+      return;
+    }
+    if (nd->ty->kind != TY_CHAR_ARR && nd->ty->base == ty_d_by) {
       load_64();
+      return;
+    }
     return;
   case ND_ASSIGN:
     if (nd->lhs->kind == ND_MEM)
@@ -222,12 +228,17 @@ void code_gen(Node *nd) {
     printf("  add rax, %d\n", nd->rhs->v->mem_idx * nd->lhs->v->al_size);
     printf("  push rax\n");
     if (nd->lm) {
-      if (nd->ty == ty_char || nd->ty == ty_char_arr)
+      if (nd->ty == ty_char)
         load_8();
       else
         load_32();
+    } else if (nd->rhs->v->ty == ty_d_by) {
+      printf("  push offset .L.data.%d\n", nd->rhs->v->ln);
+      printf("  pop rdi\n");
+      printf("  pop rax\n");
+      printf("  mov [rax], rdi\n");
+      printf("  push rdi\n");
     }
-    return;
     return;
   default:;
   }

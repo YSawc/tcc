@@ -69,9 +69,11 @@ static void emit(void) {
     // emit offset to each variables count up within starts from args data.
     for (Var *v = fn->lv; v; v = v->next) {
       if (v->is_st) {
+        int c = 0;
         for (Var *m = v->mem; m; m = m->next)
-          o += m->ty->size;
+          c++;
         // struct itself is settled offset same as first member.
+        o += c * v->al_size;
         v->offset = o;
       } else {
         // data byte not assigned offset but labeled in section of data.

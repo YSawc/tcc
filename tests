@@ -153,7 +153,7 @@ int main() {
 	/* assert(98, ({ struct { char c; char *s; }st; st.c='a'; st.s="bc"; st.s[0]; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.s[0];"); */
 	/* assert(99, ({ struct { char c; char *s; }st; st.c='a'; st.s="bc"; st.s[1]; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.s[1];"); */
 	/* assert(98, ({ struct { int i; char *s; }st; st.i=2; st.s="bc"; st.s[0];}), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;"); */
-	/* assert(97, ({ struct { int i; char c; }st; st.i=3; st.c='a'; st.c; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;"); */
+	assert(97, ({ struct { int i; char c; }st; st.i=3; st.c='a'; st.c; }), "struct { char c; char *s; }st; st.c='a'; st.s=\"bc\"; st.c;");
 	/* assert(8, ({ struct { int i; char c; }st; sizeof(st); }), "  struct { int i; char c; }st; sizeof(st);"); */
 	/* assert(16, ({ struct { int i; char c; char *s; }st; sizeof(st); }), "struct { int i; char c; char *s; }st; sizeof(st);"); */
 	assert(2, ({ struct { int x; int y; }s; s.x=2; s->y=3; s->x;}), "struct { int x; int y; }s; s.x=2; s.y=3; s.x;");
