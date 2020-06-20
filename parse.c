@@ -672,6 +672,10 @@ static Node *new_add(Node *lhs, Node *rhs) {
     return new_binary(ND_PTR_ADD, lhs, rhs);
   if (is_integer(lhs->ty) && rhs->ty->base)
     return new_binary(ND_PTR_ADD, rhs, lhs);
+  if (lhs->kind == ND_MEM) {
+    if (lhs->rhs->v->ty == ty_d_by)
+      return new_binary(ND_PTR_ADD, lhs, rhs);
+  }
   error_at(token->str, "invalid operands");
   return NULL;
 }

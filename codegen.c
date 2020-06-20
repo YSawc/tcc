@@ -113,6 +113,17 @@ void code_gen(Node *nd) {
     return;
   case ND_REF:
     code_gen(nd->lhs);
+    if (nd->lhs->lhs && nd->lhs->lhs->kind == ND_MEM) {
+      Var *v = nd->lhs->lhs->rhs->v;
+      if (v->ty == ty_d_by || v->ty == ty_char_arr ||
+          (v->ty == ty_d_by && v->ty->size == 1))
+        load_8();
+      else if ((v->ty == ty_d_by && v->ty->size == 8))
+        load_64();
+      else
+        load_32();
+      return;
+    }
     if (nd->ty == ty_char || nd->ty == ty_char_arr ||
         (nd->ty == ty_d_by && nd->ty->base))
       load_8();
@@ -230,6 +241,8 @@ void code_gen(Node *nd) {
     if (nd->lm) {
       if (nd->ty == ty_char)
         load_8();
+      else if (nd->ty == ty_d_by && nd->ty->size == 8)
+        load_64();
       else
         load_32();
     } else if (nd->rhs->v->ty == ty_d_by) {
