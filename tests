@@ -1,3 +1,6 @@
+char gc1;
+char gc2;
+
 int gi1;
 int gi2;
 
@@ -82,10 +85,15 @@ int main() {
 	/* assert(3, ({ int x=3; int y = &x; int z = &y; **z; }), "int x=3; int y = &x; int z = &y; **z;"); */
 	assert(3, ({ int x=3; int y=5; *(&y-1); }), "int x=3; int y=5; *(&y-1);");
 	assert(5, ({ int x=3; int y=5; *(&x+1); }), "int x=3; int y=5; *(&x+1);");
+	assert(6, ({ int i=3; char c=2; i*c; }), "int i=3; char c=2; i*c;");
 	assert(0, gi1, "gi1");
 	assert(2, ({ gi1 = 2; gi1; }), "gi1 = 2; gi1;"); /* FOR_INIT: */ gi1=0;
 	assert(0, ({ gi2 = 2; gi1; }), "gi2 = 2; gi1;"); /* FOR_INIT: */ gi2=0;
 	assert(2, ({ gi2 = 2; gi2; }), "gi2 = 2; gi2;"); /* FOR_INIT: */ gi2=0;
+	assert(1, sizeof(gc1), "sizeof(gc1)");
+	assert(1, gc1+1, "gc1+1");
+	assert(2, ({ gc1 = 2; gc1; }), "gc1 = 2; gc1;"); /* FOR_INIT: */ gc1=0;
+	assert(0, ({ gc2 = 2; gc1; }), "gc2 = 2; gc1;"); /* FOR_INIT: */ gc2=0;
 	assert(1, ({ char c = 1; c; }), "char c = 1; c;");
 	assert(1, ({ int i = 10; char c = 1; c; }), "int i = 10; char c = 1; c;");
 	assert(2, ({ int i = 10; char c = 1; char h = 2; h; }), "int i = 10; char c = 1; char h = 2; h;");

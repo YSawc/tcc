@@ -14,7 +14,7 @@ static void emit_globals_beforehand(Program *prog) {
   if (!prog->gv)
     return;
   for (Var *v = prog->gv; v; v = v->next)
-    if (v->ty == ty_int)
+    if (v->ty == ty_int || v->ty == ty_char)
       printf(".global %s\n", v->nm);
 }
 
@@ -28,7 +28,7 @@ static void emit_globals_data(Program *prog) {
     return;
   }
   for (Var *v = prog->gv; v; v = v->next) {
-    if (v->ty == ty_int) {
+    if (v->ty == ty_int || v->ty == ty_char) {
       printf(".align %d\n", v->ty->size);
       printf("%s:\n", v->nm);
       printf("  .zero %d\n", v->ty->size);

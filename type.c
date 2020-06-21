@@ -12,6 +12,7 @@ Type *ty_enum = &(Type){TY_ENUM, 4};
 Type *ty_vd = &(Type){TY_VOID, 1};
 Type *ty_uk = &(Type){TY_UK, 0};
 
+bool is_char(Type *ty) { return ty->kind == TY_CHAR; }
 bool is_integer(Type *ty) { return ty->kind == TY_INT; }
 
 Type *pointer_to(Type *base) {

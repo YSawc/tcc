@@ -12,7 +12,7 @@ static void gen_var_addr(Node *nd) {
     printf("  lea rax, [rbp-%d]\n", v->offset);
     printf("  push rax\n");
   } else {
-    if (v->ty == ty_int)
+    if (v->ty == ty_char || v->ty == ty_int)
       printf("  push offset %s\n", v->nm);
     else if (v->ty == ty_char_arr)
       printf("  push offset .L.data.%d\n", v->ln);

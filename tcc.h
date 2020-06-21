@@ -99,6 +99,7 @@ extern Type *ty_flt;
 extern Type *ty_dbl;
 extern Type *ty_uk;
 
+bool is_char(Type *typ);
 bool is_integer(Type *typ);
 Type *type_arr(Type *ty);
 void typ_rev(Node *nd);

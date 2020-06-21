@@ -666,7 +666,10 @@ static Node *new_add(Node *lhs, Node *rhs) {
   typ_rev(lhs);
   typ_rev(rhs);
 
-  if (is_integer(lhs->ty) && is_integer(rhs->ty))
+  if ((is_char(lhs->ty) && is_char(rhs->ty)) ||
+      (is_char(lhs->ty) && is_integer(rhs->ty)) ||
+      (is_integer(lhs->ty) && is_char(rhs->ty)) ||
+      (is_integer(lhs->ty) && is_integer(rhs->ty)))
     return new_binary(ND_ADD, lhs, rhs);
   if (lhs->ty->base && is_integer(rhs->ty))
     return new_binary(ND_PTR_ADD, lhs, rhs);
