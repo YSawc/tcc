@@ -783,11 +783,15 @@ static Node *idx(void) {
 /*              | "(" "{" (stmt)* "}" ")" */
 /*              | Ident ("()")? */
 /*              | Ident */
-/*              | Ident "." */
+/*              | Ident "." Ident */
+/*              | Ident "->" Ident */
 /*              | ImmString "[" num "]" */
 /*              | "(" add ")" ) */
 /*              | "sizeof" "(" add ")" */
-/*              | "\"" {contents} "\"" */
+/*              | "'" char "'" */
+/*              | "~" num */
+/*              | "!" num */
+/*              | "\"" contents "\"" */
 static Node *primary_expr(void) {
   if (consume("(")) {
     if (consume("{")) {

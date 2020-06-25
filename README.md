@@ -31,6 +31,7 @@ How to run test: `make test`
   - [x] typedef operator
   - [x] pointer and reference operator
   - [x] gnu expression statements
+  - [x] typedef operator
   - [ ] 'hello world'
     - [x] 'hello world' with static library
     - [ ] 'hello world' with scratch
