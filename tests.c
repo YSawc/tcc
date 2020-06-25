@@ -128,7 +128,7 @@ int main() {
 	assert(2, ({ int x=2; { int x=3; } x; }), "int x=2; { int x=3; } x;");
 	assert(2, ({ int x=2; { int x=3; } { int y=4; } x; }), "int x=2; { int x=3;} { int x=4; }");
 	assert(3, ({ int i = 3; i; }), "int i = 3; i;");
-	/* assert(1, ({ char c; sizeof(c); }), "char c; sizeof(c);"); */
+	assert(1, ({ char c; sizeof(c); }), "char c; sizeof(c);");
 	assert(7, ({ char *s="\a"; s[0]; }), "char *s=\"\\a\"; s[0];");
 	assert(8, ({ char *s="\b"; s[0]; }), "char *s=\"\\b\"; s[0];");
 	assert(9, ({ char *s="\t"; s[0]; }), "char *s=\"\\t\"; s[0];");
@@ -165,9 +165,9 @@ int main() {
 	assert(8, ({ struct { int i; char c; }st; sizeof(st); }), "struct { int i; char c; }st; sizeof(st);");
 	/* assert(24, ({ struct { int i; char c; char *s; }st; sizeof(st); }), "struct { int i; char c; char *s; }st; sizeof(st);"); */
 	assert(2, ({ struct { int x; int y; }s; s.x=2; s->y=3; s->x;}), "struct { int x; int y; }s; s.x=2; s.y=3; s.x;");
-	assert(1, ({ _Bool b = 1; b; }), "bool b = 1; b;");
-	assert(0, ({ _Bool b = 0; b; }), "bool b = 0; b;");
-	assert(1, ({ _Bool b = 3; b; }), "bool b = 3; b;");
+	assert(1, ({ _Bool b = 1; b; }), "_Bool b = 1; b;");
+	assert(0, ({ _Bool b = 0; b; }), "_Bool b = 0; b;");
+	assert(1, ({ _Bool b = 3; b; }), "_Bool b = 3; b;");
 	assert(1, ({ enum { l, m, n }; l; }), "enum { l, m, n }; l;");
 	assert(2, ({ enum { l, m, n }; m; }), "enum { l, m, n }; m;");
 	assert(3, ({ enum { l, m, n }; n; }), "enum { l, m, n }; n;");
@@ -175,14 +175,14 @@ int main() {
 	assert(1, sizeof(char), "sizeof(char)");
 	assert(4, sizeof(int), "sizeof(int)");
 	assert(4, sizeof(float), "sizeof(float)");
-	assert(1, sizeof(_Bool), "sizeof(bool)");
+	assert(1, sizeof(_Bool), "sizeof(_Bool)");
 	/* assert(0, sizeof(void), "sizeof(void)"); */
 	assert(8, sizeof(double), "sizeof(double)");
 	assert(8, sizeof(char *), "sizeof(char *)");
 	assert(8, sizeof(int *), "sizeof(int *)");
 	assert(8, sizeof(float *), "sizeof(float *)");
-	assert(8, sizeof(_Bool *), "sizeof(bool *)");
-	assert(8, sizeof(void *), "sizeof(void *)");
+	assert(8, sizeof(_Bool *), "sizeof(_Bool *)");
+	/* assert(8, sizeof(void *), "sizeof(void *)"); */
 	assert(8, sizeof(double *), "sizeof(double *)");
 	{ void *v; } printf("void *v; => ;\n");
 	assert(-1, ~0, "~0");
